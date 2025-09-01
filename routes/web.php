@@ -54,6 +54,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
         Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
         
+        // Barcode routes
+        Route::post('products/{product}/generate-barcode', [ProductController::class, 'generateBarcode'])->name('products.generate-barcode');
+        Route::post('products/{product}/regenerate-barcode', [ProductController::class, 'regenerateBarcode'])->name('products.regenerate-barcode');
+        Route::get('products/{product}/print-barcode', [ProductController::class, 'printBarcode'])->name('products.print-barcode');
+        Route::get('products/{product}/barcode-image', [ProductController::class, 'getBarcodeImage'])->name('products.barcode-image');
+        
         Route::resource('customers', App\Http\Controllers\CustomerController::class);
         Route::patch('customers/{customer}/toggle-status', [App\Http\Controllers\CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
         Route::get('customers/export/csv', [App\Http\Controllers\CustomerController::class, 'export'])->name('customers.export');
@@ -68,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:admin,supervisor,kasir'])->group(function () {
         Route::get('pos', [PosController::class, 'index'])->name('pos.index');
         Route::get('pos/search', [PosController::class, 'searchProduct'])->name('pos.search');
+        Route::post('pos/search-barcode', [PosController::class, 'searchByBarcode'])->name('pos.search-barcode');
         Route::post('pos/transaction', [PosController::class, 'processTransaction'])->name('pos.transaction');
         Route::get('pos/receipt/{id}', [PosController::class, 'printReceipt'])->name('pos.receipt');
         

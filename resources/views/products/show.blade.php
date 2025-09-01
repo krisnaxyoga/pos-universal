@@ -163,6 +163,107 @@
             </div>
         @endif
 
+        <!-- Barcode Section -->
+        <div class="glass rounded-xl shadow-sm">
+            <div class="px-6 py-4 border-b border-white/20">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                        <i class="fas fa-barcode mr-2"></i>
+                        Barcode Produk
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        @if(!$product->barcode)
+                            <button onclick="generateBarcode({{ $product->id }})" 
+                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg text-sm">
+                                <i class="fas fa-plus mr-1"></i>
+                                Generate Barcode
+                            </button>
+                        @else
+                            <button onclick="regenerateBarcode({{ $product->id }})" 
+                                    class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-3 rounded-lg text-sm">
+                                <i class="fas fa-sync mr-1"></i>
+                                Regenerate
+                            </button>
+                            <a href="{{ route('products.print-barcode', $product) }}" 
+                               target="_blank"
+                               class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg text-sm">
+                                <i class="fas fa-print mr-1"></i>
+                                Print
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                @if($product->barcode)
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Barcode Display -->
+                        <div class="text-center">
+                            <div id="barcode-image" class="bg-white p-4 rounded-lg inline-block">
+                                @if($product->barcode_image)
+                                    <img src="{{ $product->barcode_image }}" 
+                                         alt="Barcode: {{ $product->barcode }}"
+                                         class="mx-auto">
+                                @endif
+                            </div>
+                            <p class="mt-2 text-lg font-mono text-gray-900 dark:text-white">{{ $product->barcode }}</p>
+                        </div>
+                        
+                        <!-- Barcode Info -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Kode Barcode</label>
+                                <div class="mt-1 flex items-center">
+                                    <input type="text" 
+                                           value="{{ $product->barcode }}" 
+                                           readonly
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-gray-50 font-mono">
+                                    <button onclick="copyBarcode('{{ $product->barcode }}')" 
+                                            class="ml-2 px-3 py-2 bg-gray-500 hover:bg-gray-700 text-white rounded-md">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Format Barcode</label>
+                                <p class="mt-1 text-gray-900 dark:text-white">EAN-13</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Aktif
+                                </span>
+                            </div>
+                            
+                            <div class="pt-4">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Barcode ini dapat digunakan untuk scanning di sistem POS atau aplikasi scanner barcode lainnya.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <i class="fas fa-barcode text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Barcode Belum Dibuat</h4>
+                        <p class="text-gray-500 dark:text-gray-400 mb-6">
+                            Generate barcode untuk produk ini agar dapat discanning di sistem POS.
+                        </p>
+                        <button onclick="generateBarcode({{ $product->id }})" 
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
+                            <i class="fas fa-plus mr-2"></i>
+                            Generate Barcode Sekarang
+                        </button>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <!-- Product Statistics -->
         <div class="glass rounded-xl shadow-sm">
             <div class="px-6 py-4 border-b border-white/20">
@@ -227,4 +328,75 @@
             </div>
         </div>
     </div>
+
+    <!-- Barcode JavaScript -->
+    <script>
+        // Generate barcode for product
+        function generateBarcode(productId) {
+            fetch(`/products/${productId}/generate-barcode`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show the generated barcode
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat generate barcode');
+            });
+        }
+
+        // Regenerate barcode for product
+        function regenerateBarcode(productId) {
+            if (confirm('Apakah Anda yakin ingin regenerate barcode? Barcode lama akan diganti.')) {
+                fetch(`/products/${productId}/regenerate-barcode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show the new barcode
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat regenerate barcode');
+                });
+            }
+        }
+
+        // Copy barcode to clipboard
+        function copyBarcode(barcode) {
+            navigator.clipboard.writeText(barcode).then(function() {
+                // Show toast or alert
+                const button = event.target.closest('button');
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('bg-green-500');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('bg-green-500');
+                }, 2000);
+            }).catch(function() {
+                alert('Gagal menyalin barcode ke clipboard');
+            });
+        }
+    </script>
 </x-app-layout>

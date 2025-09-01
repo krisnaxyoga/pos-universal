@@ -38,15 +38,100 @@
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <!-- Search Bar -->
                     <div class="mb-6">
-                        <div class="relative">
-                            <input 
-                                type="text" 
-                                id="search-input"
-                                placeholder="Cari produk atau scan barcode..."
-                                class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        <div class="flex gap-3">
+                            <div class="relative flex-1">
+                                <input 
+                                    type="text" 
+                                    id="search-input"
+                                    placeholder="Cari produk atau scan barcode..."
+                                    class="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400 text-lg"></i>
+                                </div>
+                            </div>
+                            <button 
+                                id="barcode-scanner-btn"
+                                onclick="toggleBarcodeScanner()"
+                                class="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+                                title="Scan Barcode dengan Kamera"
                             >
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400 text-lg"></i>
+                                <i class="fas fa-camera text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Barcode Scanner Modal -->
+                    <div id="scanner-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                        <div class="bg-white rounded-lg max-w-lg w-full mx-4">
+                            <div class="flex justify-between items-center p-4 border-b">
+                                <h3 class="text-lg font-semibold">Scan Barcode Produk</h3>
+                                <button onclick="closeBarcodeScanner()" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            <div class="p-4">
+                                <!-- Scanner Status -->
+                                <div id="scanner-status" class="text-center mb-4 hidden">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                                        <span class="text-sm text-gray-600">Memulai kamera...</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Scanner viewport -->
+                                <div id="scanner-container" class="w-full h-80 bg-black rounded-lg mb-4 relative overflow-hidden">
+                                    <video id="scanner-video" 
+                                           class="w-full h-full object-cover" 
+                                           autoplay 
+                                           muted 
+                                           playsinline>
+                                    </video>
+                                    <canvas id="scanner-canvas" 
+                                            class="absolute inset-0 w-full h-full" 
+                                            style="display: none;">
+                                    </canvas>
+                                    
+                                    <!-- Scanning overlay -->
+                                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div class="w-64 h-40 border-2 border-red-500 border-dashed opacity-75 rounded-lg relative">
+                                            <!-- Scanning line animation -->
+                                            <div class="scanner-line"></div>
+                                            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded">
+                                                Arahkan barcode ke area ini
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Corner indicators -->
+                                    <div class="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-green-400"></div>
+                                    <div class="absolute top-4 right-4 w-6 h-6 border-r-2 border-t-2 border-green-400"></div>
+                                    <div class="absolute bottom-4 left-4 w-6 h-6 border-l-2 border-b-2 border-green-400"></div>
+                                    <div class="absolute bottom-4 right-4 w-6 h-6 border-r-2 border-b-2 border-green-400"></div>
+                                </div>
+                                
+                                <!-- Scanner controls -->
+                                <div class="flex justify-center space-x-3">
+                                    <button id="flash-toggle" onclick="toggleFlash()" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 hidden">
+                                        <i class="fas fa-flashlight mr-2"></i>Flash
+                                    </button>
+                                    <button onclick="switchCamera()" id="camera-switch" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 hidden">
+                                        <i class="fas fa-camera-rotate mr-2"></i>Switch
+                                    </button>
+                                    <button onclick="manualInput()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                                        <i class="fas fa-keyboard mr-2"></i>Manual
+                                    </button>
+                                    <button onclick="closeBarcodeScanner()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                                        <i class="fas fa-times mr-2"></i>Batal
+                                    </button>
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Pastikan pencahayaan cukup dan barcode dalam fokus
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1107,7 +1192,488 @@
             
             updateCartDisplay();
         }
+
+        // Barcode Scanner Functions
+        let scanner = null;
+        let scannerStream = null;
+        let currentFacingMode = "environment";
+        let flashEnabled = false;
+
+        function toggleBarcodeScanner() {
+            const modal = document.getElementById('scanner-modal');
+            if (modal.classList.contains('hidden')) {
+                openBarcodeScanner();
+            } else {
+                closeBarcodeScanner();
+            }
+        }
+
+        function openBarcodeScanner() {
+            const modal = document.getElementById('scanner-modal');
+            const video = document.getElementById('scanner-video');
+            const status = document.getElementById('scanner-status');
+            
+            modal.classList.remove('hidden');
+            status.classList.remove('hidden');
+            
+            // First try to get camera permissions and test
+            initializeCamera();
+        }
+
+        async function initializeCamera() {
+            const video = document.getElementById('scanner-video');
+            const status = document.getElementById('scanner-status');
+            
+            try {
+                // Request camera with enhanced constraints
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: currentFacingMode },
+                        width: { ideal: 1280, min: 640 },
+                        height: { ideal: 720, min: 480 },
+                        frameRate: { ideal: 30, min: 15 },
+                        // Additional constraints for better image quality
+                        focusMode: { ideal: "continuous" },
+                        exposureMode: { ideal: "continuous" },
+                        whiteBalanceMode: { ideal: "continuous" }
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                scannerStream = stream;
+                
+                // Set video properties
+                video.srcObject = stream;
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
+                
+                // Wait for video to load
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                });
+
+                // Hide status and show camera controls
+                status.classList.add('hidden');
+                showCameraControls();
+                
+                // Initialize QuaggaJS with better config
+                initializeQuagga();
+
+            } catch (err) {
+                console.error('Camera error:', err);
+                status.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
+                        <p class="text-red-600">Gagal mengakses kamera</p>
+                        <p class="text-xs text-gray-500">${err.message}</p>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    manualInput();
+                }, 2000);
+            }
+        }
+
+        function initializeQuagga() {
+            const video = document.getElementById('scanner-video');
+            
+            // Try ZXing first for better performance
+            if (typeof ZXing !== 'undefined' && ZXing.BrowserMultiFormatReader) {
+                initializeZXing();
+                return;
+            }
+            
+            // Fallback to QuaggaJS
+            if (typeof Quagga !== 'undefined') {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: video,
+                        constraints: {
+                            width: { min: 640, ideal: 1280 },
+                            height: { min: 480, ideal: 720 },
+                            facingMode: currentFacingMode,
+                            frameRate: { ideal: 30 }
+                        },
+                        area: { // Scan area optimization
+                            top: "20%",
+                            right: "20%", 
+                            left: "20%",
+                            bottom: "20%"
+                        }
+                    },
+                    decoder: {
+                        readers: [
+                            "ean_reader", 
+                            "ean_8_reader",
+                            "ean_5_reader", 
+                            "code_128_reader",
+                            "code_39_reader"
+                        ]
+                    },
+                    locator: {
+                        patchSize: "large",
+                        halfSample: false // Better quality
+                    },
+                    numOfWorkers: 4, // Use more workers for better performance
+                    frequency: 10, // Scan frequency
+                    debug: false
+                }, function(err) {
+                    if (err) {
+                        console.log(err);
+                        console.log("QuaggaJS failed, using manual input");
+                        return;
+                    }
+                    console.log("Initialization finished. Ready to start");
+                    Quagga.start();
+                });
+                
+                // Listen for barcode detection with lower threshold
+                Quagga.onDetected(function(result) {
+                    console.log("Barcode detected:", result);
+                    
+                    // Lower threshold for easier detection
+                    if (result.codeResult.startInfo.error < 0.3) {
+                        console.log("Barcode detected with code:", result.codeResult.code);
+                        
+                        // Visual feedback - flash effect
+                        const container = document.getElementById('scanner-container');
+                        container.classList.add('flash-success');
+                        setTimeout(() => container.classList.remove('flash-success'), 300);
+                        
+                        // Small delay to show flash effect
+                        setTimeout(() => {
+                            searchProductByBarcode(result.codeResult.code);
+                            closeBarcodeScanner();
+                        }, 200);
+                    }
+                });
+                
+                // Also listen for processing events for debugging
+                Quagga.onProcessed(function(result) {
+                    var drawingCtx = Quagga.canvas.ctx.overlay,
+                        drawingCanvas = Quagga.canvas.dom.overlay;
+
+                    if (result) {
+                        if (result.boxes) {
+                            drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                            result.boxes.filter(function (box) {
+                                return box !== result.box;
+                            }).forEach(function (box) {
+                                Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+                            });
+                        }
+
+                        if (result.box) {
+                            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
+                        }
+
+                        if (result.codeResult && result.codeResult.code) {
+                            Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+                        }
+                    }
+                });
+            }
+        }
+
+        // ZXing implementation for better barcode scanning
+        let codeReader = null;
+        
+        function initializeZXing() {
+            const video = document.getElementById('scanner-video');
+            
+            try {
+                codeReader = new ZXing.BrowserMultiFormatReader();
+                
+                // Start scanning
+                codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+                    if (result) {
+                        console.log("ZXing detected barcode:", result.getText());
+                        
+                        // Visual feedback - flash effect
+                        const container = document.getElementById('scanner-container');
+                        container.classList.add('flash-success');
+                        setTimeout(() => container.classList.remove('flash-success'), 300);
+                        
+                        // Process the detected barcode
+                        setTimeout(() => {
+                            searchProductByBarcode(result.getText());
+                            closeBarcodeScanner();
+                        }, 200);
+                    }
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.error("ZXing error:", err);
+                    }
+                });
+                
+                console.log("ZXing scanner initialized");
+                
+            } catch (err) {
+                console.error("ZXing failed, falling back to QuaggaJS:", err);
+                initializeQuaggaFallback();
+            }
+        }
+        
+        function initializeQuaggaFallback() {
+            const video = document.getElementById('scanner-video');
+            
+            if (typeof Quagga !== 'undefined') {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: video,
+                        constraints: {
+                            width: { min: 640, ideal: 1280 },
+                            height: { min: 480, ideal: 720 },
+                            facingMode: currentFacingMode,
+                            frameRate: { ideal: 30 }
+                        },
+                        area: {
+                            top: "20%",
+                            right: "20%", 
+                            left: "20%",
+                            bottom: "20%"
+                        }
+                    },
+                    decoder: {
+                        readers: [
+                            "ean_reader", 
+                            "ean_8_reader",
+                            "ean_5_reader", 
+                            "code_128_reader",
+                            "code_39_reader"
+                        ]
+                    },
+                    locator: {
+                        patchSize: "large",
+                        halfSample: false
+                    },
+                    numOfWorkers: 2,
+                    frequency: 10,
+                    debug: false
+                }, function(err) {
+                    if (err) {
+                        console.log("QuaggaJS error:", err);
+                        return;
+                    }
+                    console.log("QuaggaJS fallback initialized");
+                    Quagga.start();
+                });
+                
+                // Detection handler
+                Quagga.onDetected(function(result) {
+                    console.log("QuaggaJS detected barcode:", result.codeResult.code);
+                    
+                    if (result.codeResult.startInfo.error < 0.3) {
+                        // Visual feedback
+                        const container = document.getElementById('scanner-container');
+                        container.classList.add('flash-success');
+                        setTimeout(() => container.classList.remove('flash-success'), 300);
+                        
+                        setTimeout(() => {
+                            searchProductByBarcode(result.codeResult.code);
+                            closeBarcodeScanner();
+                        }, 200);
+                    }
+                });
+            }
+        }
+
+        function showCameraControls() {
+            // Show flash toggle if supported
+            if (scannerStream) {
+                const videoTrack = scannerStream.getVideoTracks()[0];
+                const capabilities = videoTrack.getCapabilities();
+                
+                if (capabilities.torch) {
+                    document.getElementById('flash-toggle').classList.remove('hidden');
+                }
+            }
+            
+            // Show camera switch button if multiple cameras available
+            navigator.mediaDevices.enumerateDevices().then(devices => {
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                if (videoDevices.length > 1) {
+                    document.getElementById('camera-switch').classList.remove('hidden');
+                }
+            });
+        }
+
+        function toggleFlash() {
+            if (scannerStream) {
+                const videoTrack = scannerStream.getVideoTracks()[0];
+                const button = document.getElementById('flash-toggle');
+                
+                try {
+                    videoTrack.applyConstraints({
+                        advanced: [{
+                            torch: !flashEnabled
+                        }]
+                    });
+                    
+                    flashEnabled = !flashEnabled;
+                    button.innerHTML = flashEnabled ? 
+                        '<i class="fas fa-flashlight mr-2"></i>Flash ON' : 
+                        '<i class="fas fa-flashlight mr-2"></i>Flash OFF';
+                    button.classList.toggle('bg-yellow-600', flashEnabled);
+                } catch (err) {
+                    console.log('Flash not supported');
+                }
+            }
+        }
+
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+            closeBarcodeScanner();
+            setTimeout(() => openBarcodeScanner(), 500);
+        }
+
+        function manualInput() {
+            const barcode = prompt("Masukkan kode barcode secara manual:");
+            if (barcode && barcode.trim()) {
+                searchProductByBarcode(barcode.trim());
+            }
+            closeBarcodeScanner();
+        }
+
+        function closeBarcodeScanner() {
+            const modal = document.getElementById('scanner-modal');
+            const video = document.getElementById('scanner-video');
+            const status = document.getElementById('scanner-status');
+            
+            modal.classList.add('hidden');
+            status.classList.add('hidden');
+            
+            // Stop ZXing scanner
+            if (codeReader) {
+                try {
+                    codeReader.reset();
+                    codeReader = null;
+                } catch (e) {
+                    console.log('ZXing cleanup error:', e);
+                }
+            }
+            
+            // Stop QuaggaJS
+            if (typeof Quagga !== 'undefined') {
+                try {
+                    Quagga.stop();
+                } catch (e) {
+                    console.log('Quagga already stopped');
+                }
+            }
+            
+            // Stop camera stream
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                scannerStream = null;
+            }
+            
+            // Clear video
+            video.srcObject = null;
+            
+            // Hide camera controls
+            document.getElementById('flash-toggle').classList.add('hidden');
+            document.getElementById('camera-switch').classList.add('hidden');
+            
+            // Reset state
+            flashEnabled = false;
+        }
+
+        function searchProductByBarcode(barcode) {
+            // Show loading state
+            document.getElementById('search-input').value = 'Mencari barcode: ' + barcode;
+            
+            fetch('/pos/search-barcode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ barcode: barcode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('search-input').value = '';
+                
+                if (data.success) {
+                    const product = data.product;
+                    addProductToCart(
+                        product.id,
+                        product.name,
+                        product.price,
+                        product.stock,
+                        product.image
+                    );
+                    
+                    // Show success message
+                    alert(`Produk "${product.name}" berhasil ditambahkan ke keranjang!`);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('search-input').value = '';
+                alert('Terjadi kesalahan saat mencari produk');
+            });
+        }
     </script>
+
+    <!-- Include ZXing-js for better barcode scanning -->
+    <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+    <!-- Fallback to QuaggaJS -->
+    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+    
+    <style>
+        /* Enhanced video styling for better visibility */
+        #scanner-video {
+            filter: brightness(1.1) contrast(1.1);
+            background: #000;
+        }
+        
+        /* Ensure video maintains aspect ratio */
+        #scanner-container video {
+            transform: scaleX(-1); /* Mirror for better UX */
+        }
+        
+        /* Scanner overlay animations */
+        .scanner-line {
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100px); opacity: 0; }
+        }
+        
+        /* Flash effect for successful scan */
+        .flash-success {
+            animation: flashGreen 0.3s ease-in-out;
+        }
+        
+        @keyframes flashGreen {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(34, 197, 94, 0.3); }
+            100% { background-color: transparent; }
+        }
+    </style>
 
     @vite(['resources/js/app.js'])
 </x-app-layout>

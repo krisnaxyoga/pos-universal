@@ -139,20 +139,45 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('products.show', $product) }}" 
-                                           class="text-indigo-600 hover:text-indigo-900">Lihat</a>
-                                        <a href="{{ route('products.edit', $product) }}" 
-                                           class="text-green-600 hover:text-green-900">Edit</a>
-                                        <form action="{{ route('products.destroy', $product) }}" 
-                                              method="POST" class="inline"
-                                              onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">
-                                                Hapus
-                                            </button>
-                                        </form>
+                                    <div class="flex flex-col space-y-1">
+                                        <!-- First row -->
+                                        <div class="flex space-x-2">
+                                            <a href="{{ route('products.show', $product) }}" 
+                                               class="text-indigo-600 hover:text-indigo-900">Lihat</a>
+                                            <a href="{{ route('products.edit', $product) }}" 
+                                               class="text-green-600 hover:text-green-900">Edit</a>
+                                            <form action="{{ route('products.destroy', $product) }}" 
+                                                  method="POST" class="inline"
+                                                  onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <!-- Barcode actions row -->
+                                        <div class="flex space-x-2 text-xs">
+                                            @if($product->barcode)
+                                                <a href="{{ route('products.print-barcode', $product) }}" 
+                                                   target="_blank"
+                                                   class="text-purple-600 hover:text-purple-900"
+                                                   title="Print Barcode">
+                                                    <i class="fas fa-print mr-1"></i>Print
+                                                </a>
+                                                <button onclick="regenerateBarcode({{ $product->id }})"
+                                                        class="text-orange-600 hover:text-orange-900"
+                                                        title="Regenerate Barcode">
+                                                    <i class="fas fa-sync mr-1"></i>Regen
+                                                </button>
+                                            @else
+                                                <button onclick="generateBarcode({{ $product->id }})"
+                                                        class="text-blue-600 hover:text-blue-900"
+                                                        title="Generate Barcode">
+                                                    <i class="fas fa-barcode mr-1"></i>Generate
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -173,4 +198,57 @@
             </div>
         </div>
     </div>
+
+    <!-- Barcode Management JavaScript -->
+    <script>
+        // Generate barcode for product
+        function generateBarcode(productId) {
+            fetch(`/products/${productId}/generate-barcode`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show the generated barcode
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat generate barcode');
+            });
+        }
+
+        // Regenerate barcode for product
+        function regenerateBarcode(productId) {
+            if (confirm('Apakah Anda yakin ingin regenerate barcode? Barcode lama akan diganti.')) {
+                fetch(`/products/${productId}/regenerate-barcode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show the new barcode
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat regenerate barcode');
+                });
+            }
+        }
+    </script>
 </x-app-layout>

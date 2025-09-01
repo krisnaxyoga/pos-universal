@@ -52,4 +52,43 @@ class Product extends Model
     {
         return $query->whereColumn('stock', '<=', 'min_stock');
     }
+
+    public function hasBarcode(): bool
+    {
+        return !empty($this->barcode);
+    }
+
+    public function getBarcodeImageAttribute(): ?string
+    {
+        if (!$this->hasBarcode()) {
+            return null;
+        }
+
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        return $barcodeService->generateBase64PNG($this->barcode);
+    }
+
+    public function generateBarcode(): self
+    {
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        return $barcodeService->assignBarcodeToProduct($this);
+    }
+
+    public function regenerateBarcode(): self
+    {
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        return $barcodeService->regenerateBarcodeForProduct($this);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($product) {
+            if (empty($product->barcode)) {
+                $barcodeService = app(\App\Services\BarcodeService::class);
+                $barcodeService->assignBarcodeToProduct($product);
+            }
+        });
+    }
 }

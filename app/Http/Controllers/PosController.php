@@ -6,7 +6,9 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Customer;
+use App\Services\BarcodeService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class PosController extends Controller
@@ -366,5 +368,59 @@ class PosController extends Controller
     {
         $transaction = Transaction::with(['items.product', 'user'])->findOrFail($id);
         return view('pos.receipt', compact('transaction'));
+    }
+
+    /**
+     * Search product by barcode for POS scanner
+     */
+    public function searchByBarcode(Request $request, BarcodeService $barcodeService): JsonResponse
+    {
+        $request->validate([
+            'barcode' => 'required|string'
+        ]);
+
+        $product = $barcodeService->findProductByBarcode($request->barcode);
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produk dengan barcode ' . $request->barcode . ' tidak ditemukan'
+            ], 404);
+        }
+
+        if (!$product->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produk tidak aktif'
+            ], 400);
+        }
+
+        if ($product->stock <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stok produk habis',
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'stock' => $product->stock
+                ]
+            ], 400);
+        }
+
+        $product->load('category');
+
+        return response()->json([
+            'success' => true,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'barcode' => $product->barcode,
+                'price' => $product->price,
+                'stock' => $product->stock,
+                'category_name' => $product->category->name ?? 'N/A',
+                'image' => $product->image ? asset('storage/' . $product->image) : null
+            ]
+        ]);
     }
 }
