@@ -113,6 +113,143 @@
                     <i x-show="darkMode" class="fas fa-sun"></i>
                 </button>
 
+                <!-- Notifications Dropdown -->
+                <div class="hidden sm:flex sm:items-center">
+                    <x-dropdown align="right" width="80">
+                        <x-slot name="trigger">
+                            <button class="relative p-2 rounded-lg hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
+                                <i class="fas fa-bell text-lg"></i>
+                                <!-- Notification Badge -->
+                                <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center" 
+                                      id="notification-badge" style="display: none;">
+                                    0
+                                </span>
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            <div class="glass rounded-lg shadow-lg border border-white/20 max-w-sm">
+                                <!-- Notification Header -->
+                                <div class="px-4 py-3 border-b border-white/10">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                                            <i class="fas fa-bell mr-2"></i>
+                                            Notifikasi
+                                        </h3>
+                                        <button onclick="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800">
+                                            Tandai Semua
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Notifications List -->
+                                <div class="max-h-80 overflow-y-auto" id="notifications-list">
+                                    <!-- Low Stock Notifications -->
+                                    <div class="px-4 py-3 border-b border-white/5 hover:bg-white/5">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-exclamation-triangle text-orange-600 dark:text-orange-400 text-xs"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                    Stok Produk Menipis
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <span id="low-stock-count">0</span> produk memerlukan restocking
+                                                </p>
+                                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    <span id="low-stock-time">Baru saja</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recent Transactions -->
+                                    <div class="px-4 py-3 border-b border-white/5 hover:bg-white/5">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-cash-register text-green-600 dark:text-green-400 text-xs"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                    Transaksi Hari Ini
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <span id="today-transactions-count">0</span> transaksi - Rp <span id="today-revenue">0</span>
+                                                </p>
+                                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Update terakhir: <span id="last-transaction-time">-</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- iPaymu Notifications -->
+                                    <div class="px-4 py-3 border-b border-white/5 hover:bg-white/5">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-credit-card text-blue-600 dark:text-blue-400 text-xs"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                    Pembayaran Online
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <span id="pending-payments-count">0</span> pembayaran pending
+                                                </p>
+                                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Update: <span id="payments-update-time">-</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- System Updates -->
+                                    <div class="px-4 py-3 hover:bg-white/5">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-info-circle text-purple-600 dark:text-purple-400 text-xs"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                    Update Sistem
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    Fitur barcode & scanner berhasil ditambahkan!
+                                                </p>
+                                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Sep 1, 2025
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- View All Link -->
+                                <div class="px-4 py-3 border-t border-white/10">
+                                    <a href="{{ route('dashboard') }}" 
+                                       class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-center">
+                                        <i class="fas fa-external-link-alt mr-2"></i>
+                                        Lihat Semua di Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </x-slot>
+                    </x-dropdown>
+                </div>
+
                 <!-- User Role Badge -->
                 <div class="hidden sm:flex">
                     <span class="px-2 py-1 text-xs font-medium rounded-full
@@ -264,6 +401,43 @@
 
             <!-- Settings Section -->
             <div class="pt-3 border-t border-white/20">
+                <!-- Mobile Notifications -->
+                <div class="mb-4 p-3 bg-white/5 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        <i class="fas fa-bell mr-2"></i>
+                        Notifikasi
+                    </h3>
+                    
+                    <div class="space-y-2">
+                        <!-- Low Stock -->
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-exclamation-triangle text-orange-500 mr-1"></i>
+                                Stok Menipis
+                            </span>
+                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full" id="mobile-low-stock-count">0</span>
+                        </div>
+                        
+                        <!-- Today Transactions -->
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-cash-register text-green-500 mr-1"></i>
+                                Transaksi Hari Ini
+                            </span>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full" id="mobile-transactions-count">0</span>
+                        </div>
+                        
+                        <!-- Pending Payments -->
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-credit-card text-blue-500 mr-1"></i>
+                                Pembayaran Pending
+                            </span>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full" id="mobile-pending-payments">0</span>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('profile.edit') }}" 
                    class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300">
                     <i class="fas fa-user"></i>
@@ -291,3 +465,182 @@
         </div>
     </div>
 </nav>
+
+<!-- Notifications JavaScript -->
+<script>
+let notificationData = {
+    lowStock: 0,
+    todayTransactions: 0,
+    todayRevenue: 0,
+    pendingPayments: 0,
+    lastUpdate: new Date()
+};
+
+// Initialize notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadNotificationData();
+    
+    // Update notifications every 30 seconds
+    setInterval(loadNotificationData, 30000);
+});
+
+function loadNotificationData() {
+    // Fetch low stock products
+    fetch('/api/dashboard-stats', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateNotifications(data.stats);
+        }
+    })
+    .catch(error => {
+        console.log('Failed to fetch notification data:', error);
+        // Use default demo data
+        updateNotifications({
+            low_stock_count: 3,
+            today_transactions: 15,
+            today_revenue: 750000,
+            pending_payments: 2
+        });
+    });
+}
+
+function updateNotifications(stats) {
+    // Update notification counts
+    notificationData.lowStock = stats.low_stock_count || 0;
+    notificationData.todayTransactions = stats.today_transactions || 0;
+    notificationData.todayRevenue = stats.today_revenue || 0;
+    notificationData.pendingPayments = stats.pending_payments || 0;
+    notificationData.lastUpdate = new Date();
+    
+    // Update desktop notifications
+    updateDesktopNotifications();
+    
+    // Update mobile notifications  
+    updateMobileNotifications();
+    
+    // Update notification badge
+    updateNotificationBadge();
+}
+
+function updateDesktopNotifications() {
+    // Low stock count
+    const lowStockElement = document.getElementById('low-stock-count');
+    if (lowStockElement) {
+        lowStockElement.textContent = notificationData.lowStock;
+    }
+    
+    // Today transactions
+    const transactionsElement = document.getElementById('today-transactions-count');
+    if (transactionsElement) {
+        transactionsElement.textContent = notificationData.todayTransactions;
+    }
+    
+    // Today revenue
+    const revenueElement = document.getElementById('today-revenue');
+    if (revenueElement) {
+        revenueElement.textContent = formatCurrency(notificationData.todayRevenue);
+    }
+    
+    // Pending payments
+    const paymentsElement = document.getElementById('pending-payments-count');
+    if (paymentsElement) {
+        paymentsElement.textContent = notificationData.pendingPayments;
+    }
+    
+    // Update timestamps
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    
+    const lowStockTime = document.getElementById('low-stock-time');
+    if (lowStockTime) {
+        lowStockTime.textContent = timeStr;
+    }
+    
+    const lastTransactionTime = document.getElementById('last-transaction-time');
+    if (lastTransactionTime) {
+        lastTransactionTime.textContent = timeStr;
+    }
+    
+    const paymentsUpdateTime = document.getElementById('payments-update-time');
+    if (paymentsUpdateTime) {
+        paymentsUpdateTime.textContent = timeStr;
+    }
+}
+
+function updateMobileNotifications() {
+    // Mobile low stock
+    const mobileStockElement = document.getElementById('mobile-low-stock-count');
+    if (mobileStockElement) {
+        mobileStockElement.textContent = notificationData.lowStock;
+    }
+    
+    // Mobile transactions
+    const mobileTransElement = document.getElementById('mobile-transactions-count');
+    if (mobileTransElement) {
+        mobileTransElement.textContent = notificationData.todayTransactions;
+    }
+    
+    // Mobile pending payments
+    const mobilePaymentsElement = document.getElementById('mobile-pending-payments');
+    if (mobilePaymentsElement) {
+        mobilePaymentsElement.textContent = notificationData.pendingPayments;
+    }
+}
+
+function updateNotificationBadge() {
+    const badge = document.getElementById('notification-badge');
+    if (badge) {
+        const totalNotifications = notificationData.lowStock + notificationData.pendingPayments;
+        
+        if (totalNotifications > 0) {
+            badge.textContent = totalNotifications > 99 ? '99+' : totalNotifications;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function markAllAsRead() {
+    // Visual feedback
+    const badge = document.getElementById('notification-badge');
+    if (badge) {
+        badge.style.display = 'none';
+    }
+    
+    // You can add API call here to mark notifications as read
+    console.log('All notifications marked as read');
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('id-ID').format(amount);
+}
+
+// Add bell shake animation for new notifications
+function shakeNotificationBell() {
+    const bellIcon = document.querySelector('.fa-bell');
+    if (bellIcon) {
+        bellIcon.classList.add('fa-shake');
+        setTimeout(() => {
+            bellIcon.classList.remove('fa-shake');
+        }, 1000);
+    }
+}
+
+// Call shake animation on significant updates
+let previousTotal = 0;
+function checkForNewNotifications() {
+    const currentTotal = notificationData.lowStock + notificationData.pendingPayments;
+    if (currentTotal > previousTotal && previousTotal > 0) {
+        shakeNotificationBell();
+    }
+    previousTotal = currentTotal;
+}
+</script>

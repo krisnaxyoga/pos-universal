@@ -30,6 +30,9 @@ Route::get('/health', function () {
 // Barcode API endpoints
 Route::post('/products/search-barcode', [App\Http\Controllers\ProductController::class, 'searchByBarcode'])->name('api.products.search-barcode');
 
+// Dashboard stats for notifications
+Route::middleware('auth')->get('/dashboard-stats', [App\Http\Controllers\DashboardController::class, 'getStats'])->name('api.dashboard-stats');
+
 // API endpoint to get iPaymu transactions data
 Route::get('/ipaymu/transactions', function () {
     $transactions = \App\Models\Transaction::whereNotNull('ipaymu_transaction_id')
