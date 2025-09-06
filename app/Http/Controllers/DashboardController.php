@@ -73,4 +73,36 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
     }
+
+    /**
+     * Get dashboard stats for notifications API
+     */
+    public function getStats()
+    {
+        try {
+            $stats = [
+                'low_stock_count' => Product::lowStock()->active()->count(),
+                'today_transactions' => Transaction::completed()->today()->count(),
+                'today_revenue' => Transaction::completed()->today()->sum('total'),
+                'pending_payments' => Transaction::where('status', 'pending')
+                    ->whereNotNull('ipaymu_transaction_id')
+                    ->count(),
+                'total_products' => Product::active()->count(),
+                'total_customers' => \App\Models\Customer::count(),
+                'last_update' => now()->toISOString()
+            ];
+
+            return response()->json([
+                'success' => true,
+                'stats' => $stats
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch stats',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
