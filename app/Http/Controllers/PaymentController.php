@@ -32,7 +32,7 @@ class PaymentController extends Controller
     {
         try {
             $result = $this->ipaymuService->getPaymentChannels();
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -45,10 +45,10 @@ class PaymentController extends Controller
                     'error' => $result['error']
                 ], 500);
             }
-            
+
         } catch (\Exception $e) {
             Log::error('Error fetching payment channels: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch payment channels',
@@ -91,7 +91,7 @@ class PaymentController extends Controller
 
             // Get transaction data
             $transaction = Transaction::with('items.product')->findOrFail($request->transaction_id);
-            
+
             // Check if transaction is already paid or processing
             if (in_array($transaction->status, ['completed', 'processing'])) {
                 return response()->json([
@@ -104,7 +104,7 @@ class PaymentController extends Controller
             $products = [];
             $quantities = [];
             $prices = [];
-            
+
             foreach ($transaction->items as $item) {
                 $products[] = $item->product_name;
                 $quantities[] = $item->quantity;
@@ -119,13 +119,13 @@ class PaymentController extends Controller
                 'buyerName' => $request->customer_name,
                 'buyerPhone' => $request->customer_phone,
                 'buyerEmail' => $request->customer_email,
-                'returnUrl' => route('payment.success', ['transaction_id' => $transaction->id]),
-                'cancelUrl' => route('payment.cancel', ['transaction_id' => $transaction->id]),
+                'returnUrl' => route('payment.success'),
+                'cancelUrl' => route('payment.cancel'),
             ];
 
             // Create payment with iPaymu
             Log::info('Calling iPaymu createPayment', ['data' => $paymentData]);
-            
+
             try {
                 $paymentResult = $this->ipaymuService->createPayment($paymentData);
                 Log::info('iPaymu createPayment result', ['result' => $paymentResult]);
@@ -233,11 +233,11 @@ class PaymentController extends Controller
                     $updateData['status'] = 'completed';
                     $updateData['paid'] = $callbackData['amount'] ?? $transaction->total;
                     break;
-                    
+
                 case 'pending':
                     $updateData['status'] = 'processing';
                     break;
-                    
+
                 case 'gagal':
                 case 'failed':
                 case 'expired':
@@ -447,13 +447,13 @@ class PaymentController extends Controller
         try {
             $transactionId = $request->query('transaction_id');
             $sessionId = $request->query('session_id');
-            
+
             Log::info('Payment success redirect', [
                 'transaction_id' => $transactionId,
                 'session_id' => $sessionId,
                 'query_params' => $request->query()
             ]);
-            
+
             if ($transactionId) {
                 $transaction = Transaction::with('items.product')->find($transactionId);
                 if ($transaction) {
@@ -464,7 +464,7 @@ class PaymentController extends Controller
                             'paid' => $transaction->total,
                             'ipaymu_paid_at' => now()
                         ]);
-                        
+
                         // Decrement stock if not already done
                         foreach ($transaction->items as $item) {
                             if ($item->product && $transaction->payment_method === 'online') {
@@ -472,22 +472,22 @@ class PaymentController extends Controller
                             }
                         }
                     }
-                    
+
                     return view('payment.success', [
                         'transaction' => $transaction,
                         'message' => 'Payment completed successfully! Thank you for your purchase.'
                     ]);
                 }
             }
-            
+
             // Fallback for success without transaction ID
             return view('payment.success', [
                 'message' => 'Payment completed successfully! Thank you for your purchase.'
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Error in payment success handler: ' . $e->getMessage());
-            
+
             return view('payment.success', [
                 'message' => 'Payment completed, but there was an issue loading transaction details.'
             ]);
@@ -502,13 +502,13 @@ class PaymentController extends Controller
         try {
             $transactionId = $request->query('transaction_id');
             $reason = $request->query('reason', 'cancelled');
-            
+
             Log::info('Payment cancel redirect', [
                 'transaction_id' => $transactionId,
                 'reason' => $reason,
                 'query_params' => $request->query()
             ]);
-            
+
             if ($transactionId) {
                 $transaction = Transaction::with('items.product')->find($transactionId);
                 if ($transaction) {
@@ -519,22 +519,22 @@ class PaymentController extends Controller
                             'notes' => 'Payment cancelled by user'
                         ]);
                     }
-                    
+
                     return view('payment.cancelled', [
                         'transaction' => $transaction,
                         'message' => 'Payment was cancelled. No charges have been made to your account.'
                     ]);
                 }
             }
-            
+
             // Fallback for cancel without transaction ID
             return view('payment.cancelled', [
                 'message' => 'Payment was cancelled. You can try again anytime.'
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Error in payment cancel handler: ' . $e->getMessage());
-            
+
             return view('payment.cancelled', [
                 'message' => 'Payment was cancelled.'
             ]);
@@ -549,26 +549,26 @@ class PaymentController extends Controller
         $query = Transaction::whereNotNull('ipaymu_transaction_id')
                            ->with(['customer', 'items.product'])
                            ->orderBy('created_at', 'desc');
-        
+
         // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         // Filter by payment method
         if ($request->filled('payment_method')) {
             $query->where('ipaymu_payment_method', $request->payment_method);
         }
-        
+
         // Filter by date range
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
-        
+
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
-        
+
         // Search by transaction number or customer name
         if ($request->filled('search')) {
             $search = $request->search;
@@ -581,9 +581,9 @@ class PaymentController extends Controller
                   });
             });
         }
-        
+
         $transactions = $query->paginate(20)->withQueryString();
-        
+
         // Get statistics
         $stats = [
             'total_transactions' => Transaction::whereNotNull('ipaymu_transaction_id')->count(),
@@ -593,14 +593,14 @@ class PaymentController extends Controller
             'total_amount' => Transaction::whereNotNull('ipaymu_transaction_id')->where('status', 'completed')->sum('total'),
             'total_fees' => Transaction::whereNotNull('ipaymu_transaction_id')->where('status', 'completed')->sum('ipaymu_fee'),
         ];
-        
+
         // Get payment methods breakdown
         $paymentMethods = Transaction::whereNotNull('ipaymu_transaction_id')
                                    ->where('status', 'completed')
                                    ->selectRaw('ipaymu_payment_method, COUNT(*) as count, SUM(total) as total_amount')
                                    ->groupBy('ipaymu_payment_method')
                                    ->get();
-        
+
         return view('dashboard.ipaymu-transactions', compact('transactions', 'stats', 'paymentMethods'));
     }
 
@@ -612,9 +612,9 @@ class PaymentController extends Controller
         if (!$transaction->ipaymu_transaction_id) {
             abort(404, 'Transaction not found or not an iPaymu transaction');
         }
-        
+
         $transaction->load(['customer', 'items.product', 'user']);
-        
+
         return view('dashboard.ipaymu-transaction-detail', compact('transaction'));
     }
 
@@ -626,13 +626,13 @@ class PaymentController extends Controller
         try {
             $transactionId = $request->query('transaction_id');
             $errorReason = $request->query('error', 'Payment failed');
-            
+
             Log::info('Payment failed redirect', [
                 'transaction_id' => $transactionId,
                 'error_reason' => $errorReason,
                 'query_params' => $request->query()
             ]);
-            
+
             if ($transactionId) {
                 $transaction = Transaction::with('items.product')->find($transactionId);
                 if ($transaction) {
@@ -643,7 +643,7 @@ class PaymentController extends Controller
                             'notes' => 'Payment failed: ' . $errorReason
                         ]);
                     }
-                    
+
                     return view('payment.failed', [
                         'transaction' => $transaction,
                         'message' => 'Payment could not be processed. Please try again.',
@@ -651,16 +651,16 @@ class PaymentController extends Controller
                     ]);
                 }
             }
-            
+
             // Fallback for failed without transaction ID
             return view('payment.failed', [
                 'message' => 'Payment could not be processed. Please try again.',
                 'error_reason' => $errorReason
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Error in payment failed handler: ' . $e->getMessage());
-            
+
             return view('payment.failed', [
                 'message' => 'Payment could not be processed.'
             ]);

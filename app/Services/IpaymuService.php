@@ -243,7 +243,7 @@ class IpaymuService
             'price' => $paymentData['price'], // array of prices
             'returnUrl' => $paymentData['returnUrl'] ?? config('app.url') . '/payment/success',
             'cancelUrl' => $paymentData['cancelUrl'] ?? config('app.url') . '/payment/cancel',
-            'notifyUrl' => config('services.ipaymu.callback_url'),
+            'notifyUrl' => request()->root() . '/api/payment/callback',
             'referenceId' => $paymentData['referenceId'],
         ];
 
