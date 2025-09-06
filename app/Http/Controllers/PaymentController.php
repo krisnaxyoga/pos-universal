@@ -119,7 +119,9 @@ class PaymentController extends Controller
                 'buyerName' => $request->customer_name,
                 'buyerPhone' => $request->customer_phone,
                 'buyerEmail' => $request->customer_email,
-                'returnUrl' => route('payment.success'),
+                'returnUrl' => route('payment.success', [
+                    'transaction_id' => $transaction->id
+                ]),
                 'cancelUrl' => route('payment.cancel'),
             ];
 
