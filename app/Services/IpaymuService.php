@@ -12,10 +12,10 @@ class IpaymuService
 
     public function __construct()
     {
-        $this->va = config('services.ipaymu.va');
-        $this->apiKey = config('services.ipaymu.api_key');
-        $this->baseUrl = config('services.ipaymu.environment') === 'production' 
-            ? 'https://my.ipaymu.com/api/v2' 
+        $this->va = (string)config('services.ipaymu.va');
+        $this->apiKey = (string)config('services.ipaymu.api_key');
+        $this->baseUrl = config('services.ipaymu.environment') === 'production'
+            ? 'https://my.ipaymu.com/api/v2'
             : 'https://sandbox.ipaymu.com/api/v2';
     }
 
@@ -32,13 +32,13 @@ class IpaymuService
             $stringToSign = strtoupper($method) . ':' . $this->va . ':' . $requestBody . ':' . $this->apiKey;
             $signature = hash_hmac('sha256', $stringToSign, $this->apiKey);
             $timestamp = date('YmdHis');
-            
+
             // Full URL
             $url = $this->baseUrl . $endpoint;
-            
+
             // cURL implementation exactly like sample
             $ch = curl_init($url);
-            
+
             $headers = [
                 'Accept: application/json',
                 'Content-Type: application/json',
@@ -46,28 +46,28 @@ class IpaymuService
                 'signature: ' . $signature,
                 'timestamp: ' . $timestamp
             ];
-            
+
             curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-            
+
             if (strtoupper($method) === 'POST' && !empty($body)) {
                 curl_setopt($ch, CURLOPT_POST, count($body));
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonBody);
             }
-            
+
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curlError = curl_error($ch);
             curl_close($ch);
-            
+
             if ($curlError) {
                 throw new \Exception('cURL Error: ' . $curlError);
             }
-            
+
             Log::info('iPaymu API Request', [
                 'method' => $method,
                 'endpoint' => $endpoint,
@@ -76,9 +76,9 @@ class IpaymuService
                 'http_code' => $httpCode,
                 'response' => $response
             ]);
-            
+
             $responseData = json_decode($response, true);
-            
+
             // Handle 403 Forbidden specifically for API unavailability
             if ($httpCode === 403) {
                 $errorMsg = 'iPaymu API returned 403 Forbidden';
@@ -87,13 +87,13 @@ class IpaymuService
                 }
                 throw new \Exception($errorMsg);
             }
-            
+
             return [
                 'success' => $httpCode >= 200 && $httpCode < 300,
                 'status_code' => $httpCode,
                 'data' => $responseData
             ];
-            
+
         } catch (\Exception $e) {
             $errorMessage = 'iPaymu API Error: ' . $e->getMessage();
             Log::error($errorMessage, [
@@ -101,7 +101,7 @@ class IpaymuService
                 'endpoint' => $endpoint,
                 'request_body' => $body
             ]);
-            
+
             return [
                 'success' => false,
                 'error' => $errorMessage
@@ -115,16 +115,16 @@ class IpaymuService
     public function getPaymentChannels(): array
     {
         $result = $this->makeRequest('GET', '/payment-channels');
-        
+
         // If API is down or has issues, return mock data for development
         if (!$result['success'] && $this->shouldUseMockData($result['error'])) {
             Log::warning('iPaymu API is unavailable, using mock data: ' . $result['error']);
             return $this->getMockPaymentChannels();
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Check if we should use mock data based on error message
      */
@@ -141,16 +141,16 @@ class IpaymuService
             'Connection refused',
             'Could not resolve host'
         ];
-        
+
         foreach ($errorPatterns as $pattern) {
             if (strpos($error, $pattern) !== false) {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     /**
      * Get mock payment channels for development when API is down
      */
@@ -227,7 +227,7 @@ class IpaymuService
     public function createPayment(array $paymentData): array
     {
         $requiredFields = ['product', 'qty', 'price', 'referenceId'];
-        
+
         foreach ($requiredFields as $field) {
             if (!isset($paymentData[$field])) {
                 return [
@@ -251,26 +251,26 @@ class IpaymuService
         if (isset($paymentData['buyerName'])) {
             $body['buyerName'] = trim($paymentData['buyerName']);
         }
-        
+
         if (isset($paymentData['buyerPhone'])) {
             $body['buyerPhone'] = trim($paymentData['buyerPhone']);
         }
-        
+
         if (isset($paymentData['buyerEmail'])) {
             $body['buyerEmail'] = trim($paymentData['buyerEmail']);
         }
 
         $result = $this->makeRequest('POST', '/payment', $body);
-        
+
         // If API is down, return mock data for development
         if (!$result['success'] && $this->shouldUseMockData($result['error'])) {
             Log::warning('iPaymu API is unavailable, using mock payment data: ' . $result['error']);
             return $this->getMockPayment($paymentData);
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Get mock payment response for development when API is down
      */
@@ -280,7 +280,7 @@ class IpaymuService
         $totalAmount = array_sum(array_map(function($price, $qty) {
             return $price * $qty;
         }, $paymentData['price'], $paymentData['qty']));
-        
+
         return [
             'success' => true,
             'status_code' => 200,
@@ -307,16 +307,16 @@ class IpaymuService
         $result = $this->makeRequest('POST', '/transaction', [
             'transactionId' => $transactionId
         ]);
-        
+
         // If API is down, return mock status for development
         if (!$result['success'] && $this->shouldUseMockData($result['error'])) {
             Log::warning('iPaymu API is unavailable, using mock status data: ' . $result['error']);
             return $this->getMockTransactionStatus($transactionId);
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Get mock transaction status for development when API is down
      */
@@ -394,7 +394,7 @@ class IpaymuService
     public function getFormattedPaymentChannels(): array
     {
         $channels = $this->getPaymentChannels();
-        
+
         if (!$channels['success']) {
             return [];
         }
