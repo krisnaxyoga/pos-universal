@@ -33,7 +33,7 @@
                     <div class="lg:col-span-1">
                         @if($product->image)
                             <div class="aspect-square">
-                                <img src="{{ asset('storage/' . $product->image) }}" 
+                                <img src="{{ asset($product->image) }}"
                                      alt="{{ $product->name }}"
                                      class="w-full h-full object-cover rounded-lg border border-gray-200 dark:border-gray-600">
                             </div>

@@ -43,15 +43,17 @@ class SettingController extends Controller
             // Handle logo upload
             if ($request->hasFile('app_logo')) {
                 $logoFile = $request->file('app_logo');
-                
+
                 // Delete old logo if exists
                 $oldLogo = Setting::get('app_logo');
-                if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
-                    Storage::disk('public')->delete($oldLogo);
+                if ($oldLogo && file_exists(public_path($oldLogo))) {
+                    unlink(public_path($oldLogo));
                 }
-                
-                // Store new logo
-                $logoPath = $logoFile->store('logos', 'public');
+
+                // Store new logo to public folder
+                $logoName = time() . '_' . uniqid() . '.' . $logoFile->getClientOriginalExtension();
+                $logoFile->move(public_path('images/logos'), $logoName);
+                $logoPath = 'images/logos/' . $logoName;
                 Setting::set('app_logo', $logoPath, 'file', 'Logo aplikasi (maksimal 2MB)', true);
             }
 
@@ -93,16 +95,16 @@ class SettingController extends Controller
     {
         try {
             $logo = Setting::get('app_logo');
-            
-            if ($logo && Storage::disk('public')->exists($logo)) {
-                Storage::disk('public')->delete($logo);
+
+            if ($logo && file_exists(public_path($logo))) {
+                unlink(public_path($logo));
             }
-            
+
             Setting::set('app_logo', null, 'file', 'Logo aplikasi (maksimal 2MB)', true);
-            
+
             return redirect()->back()
                            ->with('success', 'Logo berhasil dihapus');
-            
+
         } catch (\Exception $e) {
             return redirect()->back()
                            ->with('error', 'Gagal menghapus logo: ' . $e->getMessage());

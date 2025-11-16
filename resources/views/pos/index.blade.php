@@ -150,8 +150,8 @@
                         >
                             <div class="aspect-square mb-3">
                                 @if($product->image)
-                                    <img 
-                                        src="{{ asset('storage/' . $product->image) }}" 
+                                    <img
+                                        src="{{ asset($product->image) }}"
                                         alt="{{ $product->name }}"
                                         class="w-full h-full object-cover rounded-lg"
                                     >

@@ -119,7 +119,7 @@
                                     Gambar Saat Ini
                                 </label>
                                 <div class="mt-1">
-                                    <img src="{{ asset('storage/' . $product->image) }}" 
+                                    <img src="{{ asset($product->image) }}"
                                          alt="{{ $product->name }}"
                                          class="w-32 h-32 object-cover rounded-lg border border-gray-300">
                                 </div>

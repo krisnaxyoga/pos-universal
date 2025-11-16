@@ -49,13 +49,16 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->validated();
-        
+
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/products'), $imageName);
+            $data['image'] = 'images/products/' . $imageName;
         }
-        
+
         Product::create($data);
-        
+
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil ditambahkan');
     }
@@ -75,16 +78,22 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
         $data = $request->validated();
-        
+
         if ($request->hasFile('image')) {
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+            // Delete old image if exists
+            if ($product->image && file_exists(public_path($product->image))) {
+                unlink(public_path($product->image));
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+
+            // Upload new image
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/products'), $imageName);
+            $data['image'] = 'images/products/' . $imageName;
         }
-        
+
         $product->update($data);
-        
+
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil diupdate');
     }
@@ -95,13 +104,14 @@ class ProductController extends Controller
             return redirect()->route('products.index')
                 ->with('error', 'Produk tidak dapat dihapus karena sudah pernah ditransaksikan');
         }
-        
-        if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+
+        // Delete image if exists
+        if ($product->image && file_exists(public_path($product->image))) {
+            unlink(public_path($product->image));
         }
-        
+
         $product->delete();
-        
+
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil dihapus');
     }
@@ -266,7 +276,7 @@ class ProductController extends Controller
                 'price' => $product->price,
                 'stock' => $product->stock,
                 'category' => $product->category->name ?? 'N/A',
-                'image' => $product->image ? asset('storage/' . $product->image) : null
+                'image' => $product->image ? asset($product->image) : null
             ]
         ]);
     }

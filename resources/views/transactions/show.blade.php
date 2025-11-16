@@ -121,7 +121,7 @@
                                                 <div class="flex items-center">
                                                     @if($item->product && $item->product->image)
                                                     <div class="flex-shrink-0 h-10 w-10">
-                                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product_name }}">
+                                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ asset($item->product->image) }}" alt="{{ $item->product_name }}">
                                                     </div>
                                                     @else
                                                     <div class="flex-shrink-0 h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">

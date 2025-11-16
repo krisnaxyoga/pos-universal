@@ -419,7 +419,7 @@ class PosController extends Controller
                 'price' => $product->price,
                 'stock' => $product->stock,
                 'category_name' => $product->category->name ?? 'N/A',
-                'image' => $product->image ? asset('storage/' . $product->image) : null
+                'image' => $product->image ? asset($product->image) : null
             ]
         ]);
     }
