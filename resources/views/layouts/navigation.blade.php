@@ -1,8 +1,8 @@
-<nav x-data="{ open: false, darkMode: localStorage.getItem('darkMode') === 'true' }" 
-     x-init="$watch('darkMode', val => { 
-         localStorage.setItem('darkMode', val); 
-         if(val) { document.documentElement.classList.add('dark') } 
-         else { document.documentElement.classList.remove('dark') } 
+<nav x-data="{ open: false, darkMode: localStorage.getItem('darkMode') === 'true' }"
+     x-init="$watch('darkMode', val => {
+         localStorage.setItem('darkMode', val);
+         if(val) { document.documentElement.classList.add('dark') }
+         else { document.documentElement.classList.remove('dark') }
      })"
      class="glass sticky top-0 z-50 border-b border-white/20">
     <!-- Primary Navigation Menu -->
@@ -25,40 +25,40 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-1 sm:-my-px sm:ms-8 lg:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" 
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')"
                                 class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10">
                         <i class="fas fa-tachometer-alt text-sm"></i>
-                        <span>Dashboard</span>
+                        <span>{{ __('app.dashboard') }}</span>
                     </x-nav-link>
-                    
+
                     <x-nav-link :href="route('pos.index')" :active="request()->routeIs('pos.*')"
                                 class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10">
                         <i class="fas fa-cash-register text-sm"></i>
-                        <span>POS</span>
+                        <span>{{ __('app.pos') }}</span>
                     </x-nav-link>
-                    
+
                     <x-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.*')"
                                 class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10">
                         <i class="fas fa-receipt text-sm"></i>
-                        <span>Transaksi</span>
+                        <span>{{ __('app.transactions') }}</span>
                     </x-nav-link>
-                    
+
                     <x-nav-link :href="route('ipaymu.transactions')" :active="request()->routeIs('ipaymu.*')"
                                 class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10">
                         <i class="fas fa-credit-card text-sm"></i>
                         <span>iPaymu</span>
                     </x-nav-link>
-                    
+
                     @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
                         <div x-data="{ productsOpen: false }" class="relative">
-                            <button @click="productsOpen = !productsOpen" 
+                            <button @click="productsOpen = !productsOpen"
                                     class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                 <i class="fas fa-boxes text-sm"></i>
-                                <span>Manajemen</span>
+                                <span>{{ __('app.management') }}</span>
                                 <i class="fas fa-chevron-down text-xs"></i>
                             </button>
-                            
-                            <div x-show="productsOpen" @click.away="productsOpen = false" 
+
+                            <div x-show="productsOpen" @click.away="productsOpen = false"
                                  x-transition:enter="transition ease-out duration-200"
                                  x-transition:enter-start="opacity-0 scale-95"
                                  x-transition:enter-end="opacity-100 scale-100"
@@ -66,36 +66,36 @@
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute top-full left-0 mt-2 w-48 glass rounded-lg shadow-lg border border-white/20 py-2">
-                                <a href="{{ route('products.index') }}" 
+                                <a href="{{ route('products.index') }}"
                                    class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                     <i class="fas fa-box text-sm"></i>
-                                    <span>Produk</span>
+                                    <span>{{ __('app.products') }}</span>
                                 </a>
-                                <a href="{{ route('categories.index') }}" 
+                                <a href="{{ route('categories.index') }}"
                                    class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                     <i class="fas fa-tags text-sm"></i>
-                                    <span>Kategori</span>
+                                    <span>{{ __('app.categories') }}</span>
                                 </a>
-                                <a href="{{ route('customers.index') }}" 
+                                <a href="{{ route('customers.index') }}"
                                    class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                     <i class="fas fa-user-friends text-sm"></i>
-                                    <span>Customer</span>
+                                    <span>{{ __('app.customers') }}</span>
                                 </a>
-                                <a href="{{ route('reports.index') }}" 
+                                <a href="{{ route('reports.index') }}"
                                    class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                     <i class="fas fa-chart-bar text-sm"></i>
-                                    <span>Laporan</span>
+                                    <span>{{ __('app.reports') }}</span>
                                 </a>
                                 @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('users.index') }}" 
+                                    <a href="{{ route('users.index') }}"
                                        class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                         <i class="fas fa-users text-sm"></i>
-                                        <span>Manajemen User</span>
+                                        <span>{{ __('app.user_management') }}</span>
                                     </a>
-                                    <a href="{{ route('settings.index') }}" 
+                                    <a href="{{ route('settings.index') }}"
                                        class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                         <i class="fas fa-cog text-sm"></i>
-                                        <span>Pengaturan</span>
+                                        <span>{{ __('app.settings') }}</span>
                                     </a>
                                 @endif
                             </div>
@@ -107,7 +107,7 @@
             <!-- Right side items -->
             <div class="flex items-center space-x-3">
                 <!-- Dark Mode Toggle -->
-                <button @click="darkMode = !darkMode" 
+                <button @click="darkMode = !darkMode"
                         class="p-2 rounded-lg hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
                     <i x-show="!darkMode" class="fas fa-moon"></i>
                     <i x-show="darkMode" class="fas fa-sun"></i>
@@ -120,7 +120,7 @@
                             <button class="relative p-2 rounded-lg hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors">
                                 <i class="fas fa-bell text-lg"></i>
                                 <!-- Notification Badge -->
-                                <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center" 
+                                <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
                                       id="notification-badge" style="display: none;">
                                     0
                                 </span>
@@ -134,14 +134,14 @@
                                     <div class="flex items-center justify-between">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                                             <i class="fas fa-bell mr-2"></i>
-                                            Notifikasi
+                                            {{ __('app.notifications') }}
                                         </h3>
                                         <button onclick="markAllAsRead()" class="text-xs text-blue-600 hover:text-blue-800">
-                                            Tandai Semua
+                                            {{ __('app.mark_all') }}
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Notifications List -->
                                 <div class="max-h-80 overflow-y-auto" id="notifications-list">
                                     <!-- Low Stock Notifications -->
@@ -154,14 +154,14 @@
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                    Stok Produk Menipis
+                                                    {{ __('app.low_stock_alert') }}
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                    <span id="low-stock-count">0</span> produk memerlukan restocking
+                                                    <span id="low-stock-count">0</span> {{ __('app.products_need_restocking') }}
                                                 </p>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                                     <i class="fas fa-clock mr-1"></i>
-                                                    <span id="low-stock-time">Baru saja</span>
+                                                    <span id="low-stock-time">{{ __('app.just_now') }}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -177,14 +177,14 @@
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                    Transaksi Hari Ini
+                                                    {{ __('app.today_transactions_notif') }}
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                    <span id="today-transactions-count">0</span> transaksi - Rp <span id="today-revenue">0</span>
+                                                    <span id="today-transactions-count">0</span> {{ __('app.transactions') }} - Rp <span id="today-revenue">0</span>
                                                 </p>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                                     <i class="fas fa-clock mr-1"></i>
-                                                    Update terakhir: <span id="last-transaction-time">-</span>
+                                                    {{ __('app.last_update') }}: <span id="last-transaction-time">-</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -200,10 +200,10 @@
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                    Pembayaran Online
+                                                    {{ __('app.online_payments') }}
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                    <span id="pending-payments-count">0</span> pembayaran pending
+                                                    <span id="pending-payments-count">0</span> {{ __('app.pending_payments') }}
                                                 </p>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                                     <i class="fas fa-clock mr-1"></i>
@@ -223,10 +223,10 @@
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                    Update Sistem
+                                                    {{ __('app.system_update') }}
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                    Fitur barcode & scanner berhasil ditambahkan!
+                                                    {{ __('app.barcode_scanner_added') }}
                                                 </p>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                                     <i class="fas fa-clock mr-1"></i>
@@ -239,10 +239,10 @@
 
                                 <!-- View All Link -->
                                 <div class="px-4 py-3 border-t border-white/10">
-                                    <a href="{{ route('dashboard') }}" 
+                                    <a href="{{ route('dashboard') }}"
                                        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center justify-center">
                                         <i class="fas fa-external-link-alt mr-2"></i>
-                                        Lihat Semua di Dashboard
+                                        {{ __('app.view_all_dashboard') }}
                                     </a>
                                 </div>
                             </div>
@@ -253,7 +253,7 @@
                 <!-- User Role Badge -->
                 <div class="hidden sm:flex">
                     <span class="px-2 py-1 text-xs font-medium rounded-full
-                        {{ auth()->user()->isAdmin() ? 'bg-red-100 text-red-800' : 
+                        {{ auth()->user()->isAdmin() ? 'bg-red-100 text-red-800' :
                            (auth()->user()->isSupervisor() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
                         {{ auth()->user()->role }}
                     </span>
@@ -280,10 +280,10 @@
                                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ Auth::user()->name }}</p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}</p>
                                 </div>
-                                
+
                                 <x-dropdown-link :href="route('profile.edit')" class="flex items-center space-x-2">
                                     <i class="fas fa-user text-sm"></i>
-                                    <span>{{ __('Profile') }}</span>
+                                    <span>{{ __('app.profile') }}</span>
                                 </x-dropdown-link>
 
                                 <!-- Authentication -->
@@ -293,7 +293,7 @@
                                             onclick="event.preventDefault(); this.closest('form').submit();"
                                             class="flex items-center space-x-2 text-red-600">
                                         <i class="fas fa-sign-out-alt text-sm"></i>
-                                        <span>{{ __('Log Out') }}</span>
+                                        <span>{{ __('app.logout') }}</span>
                                     </x-dropdown-link>
                                 </form>
                             </div>
@@ -303,7 +303,7 @@
 
                 <!-- Mobile Hamburger -->
                 <div class="flex items-center sm:hidden">
-                    <button @click="open = ! open" 
+                    <button @click="open = ! open"
                             class="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-white/10 focus:outline-none transition duration-150 ease-in-out">
                         <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -327,7 +327,7 @@
                     <div class="font-medium text-gray-800 dark:text-white">{{ Auth::user()->name }}</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}</div>
                     <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full mt-1
-                        {{ auth()->user()->isAdmin() ? 'bg-red-100 text-red-800' : 
+                        {{ auth()->user()->isAdmin() ? 'bg-red-100 text-red-800' :
                            (auth()->user()->isSupervisor() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
                         {{ auth()->user()->role }}
                     </span>
@@ -335,65 +335,65 @@
             </div>
 
             <!-- Navigation Links -->
-            <a href="{{ route('dashboard') }}" 
+            <a href="{{ route('dashboard') }}"
                class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('dashboard') ? 'bg-blue-100 text-blue-800' : '' }}">
                 <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
+                <span>{{ __('app.dashboard') }}</span>
             </a>
-            
-            <a href="{{ route('pos.index') }}" 
+
+            <a href="{{ route('pos.index') }}"
                class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('pos.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                 <i class="fas fa-cash-register"></i>
-                <span>POS Kasir</span>
+                <span>{{ __('app.pos_cashier') }}</span>
             </a>
-            
-            <a href="{{ route('transactions.index') }}" 
+
+            <a href="{{ route('transactions.index') }}"
                class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('transactions.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                 <i class="fas fa-receipt"></i>
-                <span>Transaksi</span>
+                <span>{{ __('app.transactions') }}</span>
             </a>
-            
+
             @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
                 <!-- Management Section -->
                 <div class="pt-3 border-t border-white/20">
                     <div class="px-4 py-2">
-                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Manajemen</h3>
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ __('app.management') }}</h3>
                     </div>
-                    
-                    <a href="{{ route('products.index') }}" 
+
+                    <a href="{{ route('products.index') }}"
                        class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('products.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                         <i class="fas fa-box"></i>
-                        <span>Produk</span>
+                        <span>{{ __('app.products') }}</span>
                     </a>
-                    
-                    <a href="{{ route('categories.index') }}" 
+
+                    <a href="{{ route('categories.index') }}"
                        class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('categories.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                         <i class="fas fa-tags"></i>
-                        <span>Kategori</span>
+                        <span>{{ __('app.categories') }}</span>
                     </a>
-                    
-                    <a href="{{ route('customers.index') }}" 
+
+                    <a href="{{ route('customers.index') }}"
                        class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('customers.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                         <i class="fas fa-user-friends"></i>
-                        <span>Customer</span>
+                        <span>{{ __('app.customers') }}</span>
                     </a>
-                    
-                    <a href="{{ route('reports.index') }}" 
+
+                    <a href="{{ route('reports.index') }}"
                        class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('reports.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                         <i class="fas fa-chart-bar"></i>
-                        <span>Laporan</span>
+                        <span>{{ __('app.reports') }}</span>
                     </a>
-                    
+
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('users.index') }}" 
+                        <a href="{{ route('users.index') }}"
                            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('users.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                             <i class="fas fa-users"></i>
-                            <span>Manajemen User</span>
+                            <span>{{ __('app.user_management') }}</span>
                         </a>
-                        <a href="{{ route('settings.index') }}" 
+                        <a href="{{ route('settings.index') }}"
                            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('settings.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                             <i class="fas fa-cog"></i>
-                            <span>Pengaturan</span>
+                            <span>{{ __('app.settings') }}</span>
                         </a>
                     @endif
                 </div>
@@ -405,47 +405,47 @@
                 <div class="mb-4 p-3 bg-white/5 rounded-lg">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
                         <i class="fas fa-bell mr-2"></i>
-                        Notifikasi
+                        {{ __('app.notifications') }}
                     </h3>
-                    
+
                     <div class="space-y-2">
                         <!-- Low Stock -->
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-600 dark:text-gray-400">
                                 <i class="fas fa-exclamation-triangle text-orange-500 mr-1"></i>
-                                Stok Menipis
+                                {{ __('app.low_stock') }}
                             </span>
                             <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full" id="mobile-low-stock-count">0</span>
                         </div>
-                        
+
                         <!-- Today Transactions -->
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-600 dark:text-gray-400">
                                 <i class="fas fa-cash-register text-green-500 mr-1"></i>
-                                Transaksi Hari Ini
+                                {{ __('app.today_transactions') }}
                             </span>
                             <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full" id="mobile-transactions-count">0</span>
                         </div>
-                        
+
                         <!-- Pending Payments -->
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-600 dark:text-gray-400">
                                 <i class="fas fa-credit-card text-blue-500 mr-1"></i>
-                                Pembayaran Pending
+                                {{ __('app.pending') }}
                             </span>
                             <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full" id="mobile-pending-payments">0</span>
                         </div>
                     </div>
                 </div>
 
-                <a href="{{ route('profile.edit') }}" 
+                <a href="{{ route('profile.edit') }}"
                    class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300">
                     <i class="fas fa-user"></i>
-                    <span>Profile</span>
+                    <span>{{ __('app.profile') }}</span>
                 </a>
 
                 <!-- Dark Mode Toggle -->
-                <button @click="darkMode = !darkMode" 
+                <button @click="darkMode = !darkMode"
                         class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 w-full text-left">
                     <i x-show="!darkMode" class="fas fa-moon"></i>
                     <i x-show="darkMode" class="fas fa-sun"></i>
@@ -455,10 +455,10 @@
                 <!-- Logout -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" 
+                    <button type="submit"
                             class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-100 text-red-600 w-full text-left">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span>Log Out</span>
+                        <span>{{ __('app.logout') }}</span>
                     </button>
                 </form>
             </div>
@@ -479,7 +479,7 @@ let notificationData = {
 // Initialize notifications on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadNotificationData();
-    
+
     // Update notifications every 30 seconds
     setInterval(loadNotificationData, 30000);
 });
@@ -518,13 +518,13 @@ function updateNotifications(stats) {
     notificationData.todayRevenue = stats.today_revenue || 0;
     notificationData.pendingPayments = stats.pending_payments || 0;
     notificationData.lastUpdate = new Date();
-    
+
     // Update desktop notifications
     updateDesktopNotifications();
-    
-    // Update mobile notifications  
+
+    // Update mobile notifications
     updateMobileNotifications();
-    
+
     // Update notification badge
     updateNotificationBadge();
 }
@@ -535,39 +535,39 @@ function updateDesktopNotifications() {
     if (lowStockElement) {
         lowStockElement.textContent = notificationData.lowStock;
     }
-    
+
     // Today transactions
     const transactionsElement = document.getElementById('today-transactions-count');
     if (transactionsElement) {
         transactionsElement.textContent = notificationData.todayTransactions;
     }
-    
+
     // Today revenue
     const revenueElement = document.getElementById('today-revenue');
     if (revenueElement) {
         revenueElement.textContent = formatCurrency(notificationData.todayRevenue);
     }
-    
+
     // Pending payments
     const paymentsElement = document.getElementById('pending-payments-count');
     if (paymentsElement) {
         paymentsElement.textContent = notificationData.pendingPayments;
     }
-    
+
     // Update timestamps
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
     const lowStockTime = document.getElementById('low-stock-time');
     if (lowStockTime) {
         lowStockTime.textContent = timeStr;
     }
-    
+
     const lastTransactionTime = document.getElementById('last-transaction-time');
     if (lastTransactionTime) {
         lastTransactionTime.textContent = timeStr;
     }
-    
+
     const paymentsUpdateTime = document.getElementById('payments-update-time');
     if (paymentsUpdateTime) {
         paymentsUpdateTime.textContent = timeStr;
@@ -580,13 +580,13 @@ function updateMobileNotifications() {
     if (mobileStockElement) {
         mobileStockElement.textContent = notificationData.lowStock;
     }
-    
+
     // Mobile transactions
     const mobileTransElement = document.getElementById('mobile-transactions-count');
     if (mobileTransElement) {
         mobileTransElement.textContent = notificationData.todayTransactions;
     }
-    
+
     // Mobile pending payments
     const mobilePaymentsElement = document.getElementById('mobile-pending-payments');
     if (mobilePaymentsElement) {
@@ -598,7 +598,7 @@ function updateNotificationBadge() {
     const badge = document.getElementById('notification-badge');
     if (badge) {
         const totalNotifications = notificationData.lowStock + notificationData.pendingPayments;
-        
+
         if (totalNotifications > 0) {
             badge.textContent = totalNotifications > 99 ? '99+' : totalNotifications;
             badge.style.display = 'flex';
@@ -614,13 +614,13 @@ function markAllAsRead() {
     if (badge) {
         badge.style.display = 'none';
     }
-    
+
     // You can add API call here to mark notifications as read
     console.log('All notifications marked as read');
 }
 
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('id-ID').format(amount);
+    return new Intl.NumberFormat('en-US').format(amount);
 }
 
 // Add bell shake animation for new notifications
