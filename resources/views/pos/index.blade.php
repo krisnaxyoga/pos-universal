@@ -198,8 +198,8 @@
                                 <span>Subtotal:</span>
                                 <span id="subtotal-amount">Rp 0</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span>Pajak (10%):</span>
+                            <div class="flex justify-between" id="tax-row" style="{{ \App\Models\Setting::get('ppn_enabled', true) ? '' : 'display:none' }}">
+                                <span id="tax-label">PPN ({{ \App\Models\Setting::get('ppn_rate', 11) }}%):</span>
                                 <span id="tax-amount">Rp 0</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold border-t pt-2">
@@ -216,17 +216,20 @@
                                     <option value="cash">Tunai</option>
                                     <option value="card">Kartu Debit/Kredit</option>
                                     <option value="ewallet">E-Wallet</option>
+                                    @if($appSettings['ipaymu_enabled'] ?? false)
                                     <option value="online">Transfer/Online</option>
+                                    @endif
+                                    <option value="bon">Bon/Hutang</option>
                                 </select>
                             </div>
 
                             <div id="cash-payment" class="space-y-3">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bayar</label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         id="paid-amount"
-                                        min="0" 
+                                        min="0"
                                         step="1000"
                                         class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         placeholder="Masukkan jumlah bayar"
@@ -245,6 +248,23 @@
                                 <input type="text" id="customer-name" placeholder="Nama lengkap" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
                                 <input type="tel" id="customer-phone" placeholder="Nomor telepon" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
                                 <input type="email" id="customer-email" placeholder="Email" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                            </div>
+
+                            <!-- Customer Info for Bon/Hutang -->
+                            <div id="bon-customer-form" class="space-y-3 hidden">
+                                <div class="text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-user mr-1"></i> Data Pelanggan (Bon/Hutang)
+                                </div>
+                                <div class="relative">
+                                    <input type="text" id="bon-customer-search" placeholder="Cari pelanggan (nama/telepon)..." class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                                    <div id="bon-customer-results" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto hidden"></div>
+                                </div>
+                                <input type="text" id="bon-customer-name" placeholder="Nama pelanggan *" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2" required>
+                                <input type="tel" id="bon-customer-phone" placeholder="Nomor telepon (opsional)" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                                <input type="text" id="bon-customer-address" placeholder="Alamat (opsional)" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                                <div class="p-2 bg-yellow-50 rounded-lg">
+                                    <p class="text-xs text-yellow-700"><i class="fas fa-info-circle mr-1"></i> Transaksi bon akan dicatat sebagai hutang. Stok akan langsung berkurang.</p>
+                                </div>
                             </div>
                         </div>
                         
@@ -302,8 +322,8 @@
                             <span>Subtotal:</span>
                             <span id="mobile-subtotal">Rp 0</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span>Pajak (10%):</span>
+                        <div class="flex justify-between" id="mobile-tax-row" style="{{ \App\Models\Setting::get('ppn_enabled', true) ? '' : 'display:none' }}">
+                            <span id="mobile-tax-label">PPN ({{ \App\Models\Setting::get('ppn_rate', 11) }}%):</span>
                             <span id="mobile-tax">Rp 0</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold border-t pt-2">
@@ -320,16 +340,19 @@
                                 <option value="cash">Tunai</option>
                                 <option value="card">Kartu Debit/Kredit</option>
                                 <option value="ewallet">E-Wallet</option>
+                                @if($appSettings['ipaymu_enabled'] ?? false)
                                 <option value="online">Transfer/Online</option>
+                                @endif
+                                <option value="bon">Bon/Hutang</option>
                             </select>
                         </div>
 
                         <div id="mobile-cash-payment">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bayar</label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 id="mobile-paid-amount"
-                                min="0" 
+                                min="0"
                                 step="1000"
                                 class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 placeholder="Masukkan jumlah bayar"
@@ -346,6 +369,23 @@
                             <input type="text" id="mobile-customer-name" placeholder="Nama lengkap" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
                             <input type="tel" id="mobile-customer-phone" placeholder="Nomor telepon" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
                             <input type="email" id="mobile-customer-email" placeholder="Email" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                        </div>
+
+                        <!-- Mobile Bon/Hutang Customer Form -->
+                        <div id="mobile-bon-customer-form" class="space-y-2 hidden">
+                            <div class="text-sm font-medium text-gray-700">
+                                <i class="fas fa-user mr-1"></i> Data Pelanggan (Bon/Hutang)
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="mobile-bon-customer-search" placeholder="Cari pelanggan..." class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                                <div id="mobile-bon-customer-results" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto hidden"></div>
+                            </div>
+                            <input type="text" id="mobile-bon-customer-name" placeholder="Nama pelanggan *" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                            <input type="tel" id="mobile-bon-customer-phone" placeholder="Nomor telepon (opsional)" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                            <input type="text" id="mobile-bon-customer-address" placeholder="Alamat (opsional)" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+                            <div class="p-2 bg-yellow-50 rounded-lg">
+                                <p class="text-xs text-yellow-700"><i class="fas fa-info-circle mr-1"></i> Transaksi bon dicatat sebagai hutang.</p>
+                            </div>
                         </div>
                     </div>
                     
@@ -470,12 +510,15 @@
         let cartItems = [];
         let activeTab = 'products';
         let products = @json($products);
+        const ppnEnabled = {{ \App\Models\Setting::get('ppn_enabled', true) ? 'true' : 'false' }};
+        const ppnRate = {{ \App\Models\Setting::get('ppn_rate', 11) }};
         let csrfToken = '{{ csrf_token() }}';
         let routes = {
             posTransaction: '{{ route("pos.transaction") }}',
             draftSave: '{{ route("pos.draft.save") }}',
             draftLoad: '{{ route("pos.draft.load", ":id") }}'.replace(':id', ''),
-            draftDelete: '{{ url("pos/draft") }}'
+            draftDelete: '{{ url("pos/draft") }}',
+            customerSearch: '{{ route("pos.customer-search") }}'
         };
 
         // Initialize
@@ -558,19 +601,29 @@
             // Desktop customer form fields
             const desktopFields = [
                 'customer-name',
-                'customer-phone', 
+                'customer-phone',
                 'customer-email'
             ];
-            
+
             // Mobile customer form fields
             const mobileFields = [
                 'mobile-customer-name',
                 'mobile-customer-phone',
                 'mobile-customer-email'
             ];
-            
+
+            // Bon customer form fields
+            const bonFields = [
+                'bon-customer-name',
+                'bon-customer-phone',
+                'bon-customer-address',
+                'mobile-bon-customer-name',
+                'mobile-bon-customer-phone',
+                'mobile-bon-customer-address'
+            ];
+
             // Add listeners to all customer form fields
-            [...desktopFields, ...mobileFields].forEach(fieldId => {
+            [...desktopFields, ...mobileFields, ...bonFields].forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
                     field.addEventListener('input', function() {
@@ -578,39 +631,46 @@
                     });
                 }
             });
+
+            // Setup bon customer search with debounce
+            setupBonCustomerSearch('bon-customer-search', 'bon-customer-results', '');
+            setupBonCustomerSearch('mobile-bon-customer-search', 'mobile-bon-customer-results', 'mobile-');
         }
 
         function handlePaymentMethodChange(paymentMethod, isMobile) {
             const prefix = isMobile ? 'mobile-' : '';
             const cashSection = document.getElementById(`${prefix}cash-payment`);
             const customerSection = document.getElementById(`${prefix}customer-form`);
+            const bonSection = document.getElementById(`${prefix}bon-customer-form`);
             const paidInput = document.getElementById(`${prefix}paid-amount`);
-            
-            if (cashSection && customerSection) {
-                if (paymentMethod === 'online') {
-                    cashSection.classList.add('hidden');
-                    customerSection.classList.remove('hidden');
-                } else {
-                    cashSection.classList.remove('hidden');
-                    customerSection.classList.add('hidden');
-                    
-                    if (paidInput) {
-                        if (paymentMethod === 'cash') {
-                            paidInput.readOnly = false;
-                            paidInput.classList.remove('bg-gray-100');
-                        } else {
-                            paidInput.readOnly = true;
-                            paidInput.classList.add('bg-gray-100');
-                            paidInput.value = calculateTotal();
-                        }
+
+            // Hide all sections first
+            if (cashSection) cashSection.classList.add('hidden');
+            if (customerSection) customerSection.classList.add('hidden');
+            if (bonSection) bonSection.classList.add('hidden');
+
+            if (paymentMethod === 'online') {
+                if (customerSection) customerSection.classList.remove('hidden');
+            } else if (paymentMethod === 'bon') {
+                if (bonSection) bonSection.classList.remove('hidden');
+            } else {
+                if (cashSection) cashSection.classList.remove('hidden');
+                if (paidInput) {
+                    if (paymentMethod === 'cash') {
+                        paidInput.readOnly = false;
+                        paidInput.classList.remove('bg-gray-100');
+                    } else {
+                        paidInput.readOnly = true;
+                        paidInput.classList.add('bg-gray-100');
+                        paidInput.value = calculateTotal();
                     }
                 }
             }
+
             updateProcessButtons();
-            
-            // Also trigger validation when customer form becomes visible
-            if (paymentMethod === 'online') {
-                // Trigger validation update after form is shown
+
+            // Trigger validation update after form is shown
+            if (paymentMethod === 'online' || paymentMethod === 'bon') {
                 setTimeout(() => {
                     updateProcessButtons();
                 }, 100);
@@ -719,8 +779,10 @@
                 });
                 
                 // Reset customer info
-                const customerFields = ['customer-name', 'customer-phone', 'customer-email', 
-                                      'mobile-customer-name', 'mobile-customer-phone', 'mobile-customer-email'];
+                const customerFields = ['customer-name', 'customer-phone', 'customer-email',
+                                      'mobile-customer-name', 'mobile-customer-phone', 'mobile-customer-email',
+                                      'bon-customer-name', 'bon-customer-phone', 'bon-customer-address', 'bon-customer-search',
+                                      'mobile-bon-customer-name', 'mobile-bon-customer-phone', 'mobile-bon-customer-address', 'mobile-bon-customer-search'];
                 customerFields.forEach(id => {
                     const field = document.getElementById(id);
                     if (field) {
@@ -890,11 +952,11 @@
             const desktopPaidInput = document.getElementById('paid-amount');
             const mobilePaidInput = document.getElementById('mobile-paid-amount');
             
-            // Auto-fill paid amount for non-cash payments
-            if (desktopPaidInput && desktopPaymentMethod !== 'cash') {
+            // Auto-fill paid amount for non-cash payments (except bon)
+            if (desktopPaidInput && desktopPaymentMethod !== 'cash' && desktopPaymentMethod !== 'bon') {
                 desktopPaidInput.value = total;
             }
-            if (mobilePaidInput && mobilePaymentMethod !== 'cash') {
+            if (mobilePaidInput && mobilePaymentMethod !== 'cash' && mobilePaymentMethod !== 'bon') {
                 mobilePaidInput.value = total;
             }
             
@@ -943,10 +1005,10 @@
 
         function validateCurrentTransaction() {
             if (cartItems.length === 0) return false;
-            
+
             const isMobile = window.innerWidth < 768;
             const paymentMethod = document.getElementById(isMobile ? 'mobile-payment-method' : 'payment-method')?.value || 'cash';
-            
+
             if (paymentMethod === 'online') {
                 const prefix = isMobile ? 'mobile-' : '';
                 const name = document.getElementById(`${prefix}customer-name`)?.value || '';
@@ -954,17 +1016,21 @@
                 const email = document.getElementById(`${prefix}customer-email`)?.value || '';
                 return name.trim() && phone.trim() && email.trim();
             }
-            
+
+            if (paymentMethod === 'bon') {
+                const prefix = isMobile ? 'mobile-' : '';
+                const name = document.getElementById(`${prefix}bon-customer-name`)?.value || '';
+                return name.trim() !== '';
+            }
+
             if (paymentMethod === 'cash') {
                 const prefix = isMobile ? 'mobile-' : '';
                 const paidAmountInput = document.getElementById(`${prefix}paid-amount`);
                 const paidAmount = parseFloat(paidAmountInput?.value) || 0;
                 const total = calculateTotal();
-                
-                // Enable button if paid amount is entered and >= total
                 return paidAmount > 0 && paidAmount >= total;
             }
-            
+
             // For card and ewallet, just need items in cart
             return cartItems.length > 0;
         }
@@ -974,7 +1040,8 @@
         }
 
         function calculateTax(subtotal) {
-            return subtotal * 0.1; // 10% tax
+            if (!ppnEnabled) return 0;
+            return subtotal * (ppnRate / 100);
         }
 
         function calculateTotal() {
@@ -1018,6 +1085,15 @@
                     email: document.getElementById(`${prefix}customer-email`)?.value
                 };
             }
+
+            if (paymentMethod === 'bon') {
+                transactionData.paid = 0;
+                transactionData.customer_info = {
+                    name: document.getElementById(`${prefix}bon-customer-name`)?.value,
+                    phone: document.getElementById(`${prefix}bon-customer-phone`)?.value,
+                    address: document.getElementById(`${prefix}bon-customer-address`)?.value || ''
+                };
+            }
             
             try {
                 const response = await fetch(routes.posTransaction, {
@@ -1035,11 +1111,17 @@
                     // Clear cart without confirmation since transaction is successful
                     cartItems = [];
                     updateCartDisplay();
-                    
+
                     if (result.redirect && result.payment_url) {
                         // For online payments, redirect to payment page
                         alert('Transaksi online berhasil dibuat! Anda akan diarahkan ke halaman pembayaran.');
                         window.location.href = result.payment_url;
+                    } else if (result.is_bon) {
+                        // For bon/hutang payments
+                        alert('Transaksi bon/hutang berhasil dicatat!');
+                        if (result.transaction) {
+                            window.location.href = `/pos/receipt/${result.transaction.id}`;
+                        }
                     } else {
                         // For other payment methods, go to receipt
                         alert('Transaksi berhasil diproses!');
@@ -1191,6 +1273,65 @@
             }
             
             updateCartDisplay();
+        }
+
+        // Bon Customer Search
+        function setupBonCustomerSearch(searchInputId, resultsId, prefix) {
+            const searchInput = document.getElementById(searchInputId);
+            if (!searchInput) return;
+
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const query = this.value.trim();
+                const resultsDiv = document.getElementById(resultsId);
+
+                if (query.length < 2) {
+                    if (resultsDiv) resultsDiv.classList.add('hidden');
+                    return;
+                }
+
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`${routes.customerSearch}?q=${encodeURIComponent(query)}`);
+                        const customers = await response.json();
+
+                        if (customers.length === 0) {
+                            resultsDiv.innerHTML = '<div class="p-2 text-sm text-gray-500">Tidak ditemukan</div>';
+                            resultsDiv.classList.remove('hidden');
+                            return;
+                        }
+
+                        let html = '';
+                        customers.forEach(c => {
+                            html += `<div class="p-2 hover:bg-blue-50 cursor-pointer text-sm border-b" onclick="selectBonCustomer('${prefix}', '${c.name.replace(/'/g, "\\'")}', '${c.phone || ''}', '${(c.address || '').replace(/'/g, "\\'")}', '${resultsId}')">
+                                <div class="font-medium">${c.name}</div>
+                                <div class="text-xs text-gray-500">${c.phone || ''} ${c.address ? '- ' + c.address : ''}</div>
+                            </div>`;
+                        });
+                        resultsDiv.innerHTML = html;
+                        resultsDiv.classList.remove('hidden');
+                    } catch (error) {
+                        console.error('Customer search error:', error);
+                    }
+                }, 300);
+            });
+
+            // Hide results when clicking outside
+            document.addEventListener('click', function(e) {
+                const resultsDiv = document.getElementById(resultsId);
+                if (resultsDiv && !searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.classList.add('hidden');
+                }
+            });
+        }
+
+        function selectBonCustomer(prefix, name, phone, address, resultsId) {
+            document.getElementById(`${prefix}bon-customer-name`).value = name;
+            document.getElementById(`${prefix}bon-customer-phone`).value = phone;
+            document.getElementById(`${prefix}bon-customer-address`).value = address;
+            document.getElementById(resultsId).classList.add('hidden');
+            updateProcessButtons();
         }
 
         // Barcode Scanner Functions

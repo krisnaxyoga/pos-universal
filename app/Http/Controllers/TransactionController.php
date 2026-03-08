@@ -30,7 +30,16 @@ class TransactionController extends Controller
         if ($request->filled('payment_method')) {
             $query->where('payment_method', $request->payment_method);
         }
-        
+
+        if ($request->filled('bon_status')) {
+            $query->where('payment_method', 'bon');
+            if ($request->bon_status === 'unpaid') {
+                $query->whereNull('bon_paid_at');
+            } elseif ($request->bon_status === 'paid') {
+                $query->whereNotNull('bon_paid_at');
+            }
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }

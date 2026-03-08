@@ -50,9 +50,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware(['role:admin,supervisor'])->group(function () {
         Route::resource('categories', CategoryController::class);
-        Route::resource('products', ProductController::class);
         Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
+        Route::get('products/import-template', [ProductController::class, 'importTemplate'])->name('products.import-template');
         Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
+        Route::resource('products', ProductController::class);
         
         // Barcode routes
         Route::post('products/{product}/generate-barcode', [ProductController::class, 'generateBarcode'])->name('products.generate-barcode');
@@ -82,7 +83,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('pos/draft/save', [PosController::class, 'saveDraft'])->name('pos.draft.save');
         Route::get('pos/draft/{id}', [PosController::class, 'loadDraft'])->name('pos.draft.load');
         Route::delete('pos/draft/{id}', [PosController::class, 'deleteDraft'])->name('pos.draft.delete');
-        
+
+        // Customer search for POS
+        Route::get('pos/customer-search', [PosController::class, 'searchCustomer'])->name('pos.customer-search');
+
+        // Bon/Hutang management
+        Route::get('bon', [App\Http\Controllers\BonController::class, 'index'])->name('bon.index');
+        Route::post('bon/{transaction}/pay', [App\Http\Controllers\BonController::class, 'markAsPaid'])->name('bon.pay');
+
         Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
         Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
         
@@ -115,6 +123,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('settings', [App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
         Route::delete('settings/remove-logo', [App\Http\Controllers\SettingController::class, 'removeLogo'])->name('settings.remove-logo');
         Route::post('settings/test-ipaymu', [App\Http\Controllers\SettingController::class, 'testIpaymu'])->name('settings.test-ipaymu');
+
+        // Git Pull - Admin only
+        Route::get('git-pull', [App\Http\Controllers\GitPullController::class, 'index'])->name('git-pull.index');
+        Route::post('git-pull/pull', [App\Http\Controllers\GitPullController::class, 'pull'])->name('git-pull.pull');
+        Route::post('git-pull/settings', [App\Http\Controllers\GitPullController::class, 'saveSettings'])->name('git-pull.settings');
+        Route::post('git-pull/post-action', [App\Http\Controllers\GitPullController::class, 'postAction'])->name('git-pull.post-action');
     });
 });
 

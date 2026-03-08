@@ -9,8 +9,8 @@
                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                     <i class="fas fa-arrow-left mr-2"></i>Back to Transactions
                 </a>
-                @if($transaction->status === 'completed')
-                <a href="{{ route('pos.receipt', $transaction->id) }}" 
+                @if($transaction->status === 'completed' || $transaction->isBon())
+                <a href="{{ route('pos.receipt', $transaction->id) }}"
                    target="_blank"
                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     <i class="fas fa-print mr-2"></i>Print Receipt
@@ -211,6 +211,59 @@
                         </div>
                     </div>
                     @endif
+
+                    <!-- Bon/Hutang Information -->
+                    @if($transaction->isBon())
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6 bg-white border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                                <i class="fas fa-file-invoice-dollar mr-2"></i>Informasi Bon/Hutang
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Status Bon</h4>
+                                    <p class="mt-1">
+                                        @if($transaction->isBonPaid())
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1"></i> LUNAS
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <i class="fas fa-exclamation-circle mr-1"></i> BELUM LUNAS
+                                            </span>
+                                        @endif
+                                    </p>
+                                </div>
+
+                                @if($transaction->bon_paid_at)
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Tanggal Pelunasan</h4>
+                                    <p class="mt-1 text-sm text-gray-900">{{ $transaction->bon_paid_at->format('d M Y, H:i') }}</p>
+                                </div>
+                                @endif
+
+                                @if($transaction->bon_paid_amount)
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Jumlah Dibayar</h4>
+                                    <p class="mt-1 text-sm text-gray-900 font-medium">Rp {{ number_format($transaction->bon_paid_amount, 0, ',', '.') }}</p>
+                                </div>
+                                @endif
+
+                                @if($transaction->customer_info)
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Pelanggan</h4>
+                                    <p class="mt-1 text-sm text-gray-900 font-medium">{{ $transaction->customer_info['name'] ?? '-' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $transaction->customer_info['phone'] ?? '' }}</p>
+                                    @if(!empty($transaction->customer_info['address']))
+                                        <p class="text-xs text-gray-400">{{ $transaction->customer_info['address'] }}</p>
+                                    @endif
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Sidebar -->
@@ -275,7 +328,13 @@
                                 
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-500">Payment Method</h4>
-                                    <p class="mt-1 text-sm text-gray-900 capitalize">{{ str_replace('_', ' ', $transaction->payment_method) }}</p>
+                                    <p class="mt-1 text-sm text-gray-900 capitalize">
+                                        @if($transaction->payment_method === 'bon')
+                                            Bon/Hutang
+                                        @else
+                                            {{ str_replace('_', ' ', $transaction->payment_method) }}
+                                        @endif
+                                    </p>
                                 </div>
                                 
                                 <div>

@@ -8,10 +8,10 @@
                 <a href="{{ route('products.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Tambah Produk
                 </a>
-                <a href="#" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                <button onclick="document.getElementById('import-modal').classList.remove('hidden')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                     Import Excel
-                </a>
-                <a href="#" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                </button>
+                <a href="{{ route('products.export') }}" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
                     Export Excel
                 </a>
             </div>
@@ -76,7 +76,7 @@
                                 Harga
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Stok
+                                Stok Awal / Sisa
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
@@ -119,7 +119,8 @@
                                     <div class="text-xs text-gray-500">Modal: Rp {{ number_format($product->cost, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $product->stock }}</div>
+                                    <div class="text-xs text-gray-500">Awal: {{ $product->initial_stock }}</div>
+                                    <div class="text-sm font-medium text-gray-900">Sisa: {{ $product->stock }}</div>
                                     @if($product->isLowStock())
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             Stok Menipis
@@ -195,6 +196,41 @@
             <!-- Pagination -->
             <div class="mt-6">
                 {{ $products->withQueryString()->links() }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Import Produk dari Excel</h3>
+                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
+                        <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <p class="mt-1 text-xs text-gray-500">Format: xlsx, xls, csv. Maks 5MB</p>
+                    </div>
+                    <div class="mb-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
+                        <p class="font-medium mb-1">Format kolom Excel:</p>
+                        <p>nama, sku, barcode, deskripsi, kategori, harga_jual, harga_modal, stok, stok_minimum</p>
+                        <p class="mt-1 text-blue-600">Baris pertama harus berisi header kolom</p>
+                        <a href="{{ route('products.import-template') }}" class="inline-flex items-center mt-2 text-blue-700 hover:text-blue-900 font-medium">
+                            <i class="fas fa-download mr-1"></i> Download Template
+                        </a>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="document.getElementById('import-modal').classList.add('hidden')"
+                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                            Batal
+                        </button>
+                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                            Import
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

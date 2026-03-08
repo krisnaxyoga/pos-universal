@@ -45,6 +45,9 @@ class Transaction extends Model
         'ipaymu_status',
         'ipaymu_status_code',
         'ipaymu_paid_at',
+        // Bon/Hutang fields
+        'bon_paid_at',
+        'bon_paid_amount',
     ];
 
     protected $casts = [
@@ -64,6 +67,9 @@ class Transaction extends Model
         'ipaymu_fee' => 'decimal:2',
         'ipaymu_expired_date' => 'datetime',
         'ipaymu_paid_at' => 'datetime',
+        // Bon/Hutang field casts
+        'bon_paid_at' => 'datetime',
+        'bon_paid_amount' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -149,6 +155,40 @@ class Transaction extends Model
                $this->payment_method !== 'online' && 
                is_null($this->refund_reference_id) &&
                $this->refunds()->count() === 0;
+    }
+
+    public function isBon(): bool
+    {
+        return $this->payment_method === 'bon';
+    }
+
+    public function isBonPaid(): bool
+    {
+        return $this->isBon() && $this->status === 'completed' && !is_null($this->bon_paid_at);
+    }
+
+    public function isBonUnpaid(): bool
+    {
+        return $this->isBon() && $this->status === 'pending' && is_null($this->bon_paid_at);
+    }
+
+    public function scopeBon($query)
+    {
+        return $query->where('payment_method', 'bon');
+    }
+
+    public function scopeBonUnpaid($query)
+    {
+        return $query->where('payment_method', 'bon')
+                    ->where('status', 'pending')
+                    ->whereNull('bon_paid_at');
+    }
+
+    public function scopeBonPaid($query)
+    {
+        return $query->where('payment_method', 'bon')
+                    ->where('status', 'completed')
+                    ->whereNotNull('bon_paid_at');
     }
 
     public function isRefund(): bool

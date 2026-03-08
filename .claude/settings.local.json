@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(composer install --no-dev)",
+      "Bash(composer install)",
+      "Bash(php artisan make:migration add_initial_stock_to_products_table --table=products)",
+      "Bash(php artisan migrate --force)",
+      "Bash(php artisan route:list --name=bon)",
+      "Bash(php artisan route:list --name=pos.customer)",
+      "Bash(php artisan tinker --execute=\"echo \\\\DB::select\\(\"\"SHOW COLUMNS FROM transactions WHERE Field = ''payment_method''\"\"\\)[0]->Type;\")",
+      "Bash(php artisan make:migration add_bon_to_payment_method_enum_in_transactions_table)",
+      "Bash(php artisan migrate)",
+      "Bash(php artisan tinker --execute=\"App\\\\Models\\\\Setting::clearCache\\(\\); App\\\\Models\\\\Setting::initializeDefaults\\(\\); echo ''ipaymu_enabled = '' . \\(App\\\\Models\\\\Setting::get\\(''ipaymu_enabled''\\) ? ''true'' : ''false''\\);\")",
+      "Bash(php artisan route:list --name=git-pull)"
     ],
     "deny": [],
     "ask": []

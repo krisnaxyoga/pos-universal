@@ -6,6 +6,10 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Http\Requests\ProductRequest;
 use App\Services\BarcodeService;
+use App\Imports\ProductsImport;
+use App\Exports\ProductsExport;
+use App\Exports\ProductsTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -49,6 +53,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $data = $request->validated();
+        $data['initial_stock'] = $data['stock'] ?? 0;
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -279,5 +284,59 @@ class ProductController extends Controller
                 'image' => $product->image ? asset($product->image) : null
             ]
         ]);
+    }
+
+    /**
+     * Export products to Excel
+     */
+    public function export()
+    {
+        return Excel::download(new ProductsExport, 'produk-' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Download import template
+     */
+    public function importTemplate()
+    {
+        return Excel::download(new ProductsTemplateExport, 'template-import-produk.xlsx');
+    }
+
+    /**
+     * Import products from Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+        ], [
+            'file.required' => 'File Excel wajib dipilih',
+            'file.mimes' => 'Format file harus xlsx, xls, atau csv',
+            'file.max' => 'Ukuran file maksimal 5MB',
+        ]);
+
+        try {
+            $import = new ProductsImport;
+            $import->import($request->file('file'));
+
+            $errors = $import->errors();
+            $rowCount = $import->getRowCount();
+
+            if ($errors->isNotEmpty()) {
+                $errorMessages = $errors->map(function ($e) {
+                    return $e->getMessage();
+                })->take(5)->implode(', ');
+
+                return redirect()->route('products.index')
+                    ->with('warning', "Berhasil import {$rowCount} produk. Beberapa baris dilewati: {$errorMessages}");
+            }
+
+            return redirect()->route('products.index')
+                ->with('success', "Berhasil import {$rowCount} produk");
+
+        } catch (\Exception $e) {
+            return redirect()->route('products.index')
+                ->with('error', 'Gagal import: ' . $e->getMessage());
+        }
     }
 }

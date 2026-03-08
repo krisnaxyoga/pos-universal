@@ -213,13 +213,23 @@
             @endisset
 
             <!-- Mobile-friendly notifications -->
-            @if(session('success') || session('error'))
+            @if(session('success') || session('error') || session('warning'))
                 <div class="fixed top-20 left-4 right-4 z-50 md:left-auto md:right-6 md:w-96">
                     @if(session('success'))
                         <div class="mb-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center animate-pulse">
                             <i class="fas fa-check-circle mr-3"></i>
                             <span>{{ session('success') }}</span>
                             <button onclick="this.parentElement.remove()" class="ml-auto text-green-200 hover:text-white">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('warning'))
+                        <div class="mb-4 bg-yellow-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center animate-pulse">
+                            <i class="fas fa-exclamation-triangle mr-3"></i>
+                            <span>{{ session('warning') }}</span>
+                            <button onclick="this.parentElement.remove()" class="ml-auto text-yellow-200 hover:text-white">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>

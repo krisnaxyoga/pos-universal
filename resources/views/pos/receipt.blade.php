@@ -191,19 +191,41 @@
                     @case('cash') Tunai @break
                     @case('card') Kartu @break
                     @case('ewallet') E-Wallet @break
+                    @case('bon') BON/HUTANG @break
                     @default {{ ucfirst($transaction->payment_method) }}
                 @endswitch
             </span>
         </div>
-        <div class="total-row">
-            <span>Bayar:</span>
-            <span>Rp {{ number_format($transaction->paid, 0, ',', '.') }}</span>
-        </div>
-        @if($transaction->change > 0)
-            <div class="total-row">
-                <span>Kembalian:</span>
-                <span>Rp {{ number_format($transaction->change, 0, ',', '.') }}</span>
+        @if($transaction->payment_method === 'bon')
+            <div class="total-row" style="font-weight:bold; text-align:center; margin:8px 0; padding:4px; border:1px dashed #000;">
+                <span style="width:100%; text-align:center;">
+                    @if($transaction->isBonPaid())
+                        STATUS: LUNAS ({{ $transaction->bon_paid_at?->format('d/m/Y') }})
+                    @else
+                        STATUS: BELUM LUNAS
+                    @endif
+                </span>
             </div>
+            @if($transaction->customer_info)
+                <div style="margin:5px 0; font-size:11px;">
+                    <div><strong>Pelanggan:</strong> {{ $transaction->customer_info['name'] ?? '-' }}</div>
+                    <div><strong>Telepon:</strong> {{ $transaction->customer_info['phone'] ?? '-' }}</div>
+                    @if(!empty($transaction->customer_info['address']))
+                        <div><strong>Alamat:</strong> {{ $transaction->customer_info['address'] }}</div>
+                    @endif
+                </div>
+            @endif
+        @else
+            <div class="total-row">
+                <span>Bayar:</span>
+                <span>Rp {{ number_format($transaction->paid, 0, ',', '.') }}</span>
+            </div>
+            @if($transaction->change > 0)
+                <div class="total-row">
+                    <span>Kembalian:</span>
+                    <span>Rp {{ number_format($transaction->change, 0, ',', '.') }}</span>
+                </div>
+            @endif
         @endif
     </div>
     

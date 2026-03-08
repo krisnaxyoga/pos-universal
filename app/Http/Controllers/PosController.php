@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Services\BarcodeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -74,8 +75,13 @@ class PosController extends Controller
             'tax' => 'nullable|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'paid' => 'required|numeric|min:0',
-            'payment_method' => 'required|in:cash,card,ewallet,online',
+            'payment_method' => 'required|in:cash,card,ewallet,online,bon',
         ];
+
+        // Block online payment if iPaymu is disabled
+        if ($request->payment_method === 'online' && !Setting::get('ipaymu_enabled', false)) {
+            return response()->json(['error' => 'Metode pembayaran online tidak aktif'], 422);
+        }
 
         // Add customer validation for online payments
         if ($request->payment_method === 'online') {
@@ -83,6 +89,13 @@ class PosController extends Controller
             $rules['customer_info.name'] = 'required|string|max:255';
             $rules['customer_info.phone'] = 'required|string|max:20';
             $rules['customer_info.email'] = 'required|email|max:255';
+        }
+
+        // Add customer validation for bon/hutang payments
+        if ($request->payment_method === 'bon') {
+            $rules['customer_info'] = 'required|array';
+            $rules['customer_info.name'] = 'required|string|max:255';
+            $rules['customer_info.phone'] = 'nullable|string|max:20';
         }
 
         $request->validate($rules);
@@ -111,14 +124,36 @@ class PosController extends Controller
 
                 $customerInfo = $customerData;
             }
-            
+
+            // Handle customer data for bon/hutang payments
+            if ($request->payment_method === 'bon' && $request->customer_info) {
+                $customerData = $request->customer_info;
+
+                if (!empty($customerData['phone'])) {
+                    $customer = Customer::findOrCreateByPhone($customerData['phone'], [
+                        'name' => $customerData['name'],
+                        'address' => $customerData['address'] ?? null,
+                    ]);
+
+                    $customer->update([
+                        'name' => $customerData['name'],
+                        'address' => $customerData['address'] ?? $customer->address,
+                    ]);
+                }
+
+                $customerInfo = $customerData;
+            }
+
             // Determine transaction status based on payment method
             $status = 'completed';
             $change = $request->paid - $request->total;
-            
+
             if ($request->payment_method === 'online') {
-                $status = 'pending'; // Online payments start as pending
-                $change = 0; // No change for online payments initially
+                $status = 'pending';
+                $change = 0;
+            } elseif ($request->payment_method === 'bon') {
+                $status = 'pending';
+                $change = 0;
             }
             
             $transaction = Transaction::create([
@@ -129,7 +164,7 @@ class PosController extends Controller
                 'discount' => $request->discount ?? 0,
                 'tax' => $request->tax ?? 0,
                 'total' => $request->total,
-                'paid' => $request->paid,
+                'paid' => $request->payment_method === 'bon' ? 0 : $request->paid,
                 'change' => $change,
                 'payment_method' => $request->payment_method,
                 'status' => $status,
@@ -191,6 +226,16 @@ class PosController extends Controller
                 }
             }
             
+            // Handle bon response
+            if ($request->payment_method === 'bon') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transaksi bon/hutang berhasil dicatat',
+                    'transaction' => $transaction->load('items.product', 'customer'),
+                    'is_bon' => true
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil diproses',
@@ -422,5 +467,25 @@ class PosController extends Controller
                 'image' => $product->image ? asset($product->image) : null
             ]
         ]);
+    }
+
+    public function searchCustomer(Request $request): JsonResponse
+    {
+        $search = $request->query('q');
+
+        if (empty($search) || strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $customers = Customer::where('is_active', true)
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+            })
+            ->select('id', 'name', 'phone', 'address', 'customer_code')
+            ->take(10)
+            ->get();
+
+        return response()->json($customers);
     }
 }

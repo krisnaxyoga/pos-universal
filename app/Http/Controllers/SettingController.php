@@ -30,7 +30,9 @@ class SettingController extends Controller
             'ipaymu_va' => 'nullable|string|max:255',
             'ipaymu_api_key' => 'nullable|string|max:255',
             'ipaymu_environment' => 'required|in:sandbox,production',
-            'receipt_footer' => 'nullable|string|max:500'
+            'receipt_footer' => 'nullable|string|max:500',
+            'ppn_enabled' => 'nullable|in:0,1',
+            'ppn_rate' => 'nullable|numeric|min:0|max:100'
         ]);
 
         if ($validator->fails()) {
@@ -66,8 +68,15 @@ class SettingController extends Controller
                 'ipaymu_va' => ['type' => 'string', 'description' => 'iPaymu Virtual Account', 'public' => false],
                 'ipaymu_api_key' => ['type' => 'string', 'description' => 'iPaymu API Key', 'public' => false],
                 'ipaymu_environment' => ['type' => 'string', 'description' => 'iPaymu Environment (sandbox/production)', 'public' => false],
-                'receipt_footer' => ['type' => 'string', 'description' => 'Footer yang ditampilkan di struk', 'public' => true]
+                'receipt_footer' => ['type' => 'string', 'description' => 'Footer yang ditampilkan di struk', 'public' => true],
+                'ppn_rate' => ['type' => 'float', 'description' => 'Persentase PPN (%)', 'public' => true]
             ];
+
+            // Handle iPaymu toggle (checkbox sends nothing when unchecked)
+            Setting::set('ipaymu_enabled', $request->has('ipaymu_enabled') ? '1' : '0', 'boolean', 'Aktifkan payment gateway iPaymu', true);
+
+            // Handle PPN toggle (checkbox sends nothing when unchecked)
+            Setting::set('ppn_enabled', $request->has('ppn_enabled') ? '1' : '0', 'boolean', 'Aktifkan PPN (Pajak Pertambahan Nilai)', true);
 
             foreach ($settingsToUpdate as $key => $config) {
                 if ($request->has($key)) {

@@ -178,6 +178,42 @@ class Setting extends Model
                 'type' => 'string',
                 'description' => 'Footer yang ditampilkan di struk',
                 'is_public' => true
+            ],
+            'ipaymu_enabled' => [
+                'value' => '0',
+                'type' => 'boolean',
+                'description' => 'Aktifkan payment gateway iPaymu',
+                'is_public' => true
+            ],
+            'ppn_enabled' => [
+                'value' => '1',
+                'type' => 'boolean',
+                'description' => 'Aktifkan PPN (Pajak Pertambahan Nilai)',
+                'is_public' => true
+            ],
+            'ppn_rate' => [
+                'value' => '11',
+                'type' => 'float',
+                'description' => 'Persentase PPN (%)',
+                'is_public' => true
+            ],
+            'git_repo_url' => [
+                'value' => '',
+                'type' => 'string',
+                'description' => 'Git repository URL',
+                'is_public' => false
+            ],
+            'git_access_token' => [
+                'value' => '',
+                'type' => 'string',
+                'description' => 'Git access token',
+                'is_public' => false
+            ],
+            'git_provider' => [
+                'value' => 'github',
+                'type' => 'string',
+                'description' => 'Git provider (github/gitlab)',
+                'is_public' => false
             ]
         ];
     }

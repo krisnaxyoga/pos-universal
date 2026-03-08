@@ -104,13 +104,63 @@
                     </div>
                 </div>
 
+                <!-- PPN (Pajak) Configuration Section -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-6">Pengaturan Pajak (PPN)</h3>
+                        <p class="text-sm text-gray-600 mb-4">Atur Pajak Pertambahan Nilai yang berlaku di transaksi POS</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- PPN Toggle -->
+                            <div class="md:col-span-2">
+                                <label for="ppn_enabled" class="flex items-center cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" id="ppn_enabled" name="ppn_enabled" value="1" class="sr-only peer"
+                                            {{ old('ppn_enabled', $settings->has('ppn_enabled') && $settings->get('ppn_enabled')->value ? 'checked' : '') }}>
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 transition-colors"></div>
+                                        <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm font-medium text-gray-700">Aktifkan PPN</span>
+                                </label>
+                                <p class="mt-1 text-sm text-gray-500 ml-14">Jika dinonaktifkan, PPN tidak akan ditambahkan ke transaksi POS</p>
+                            </div>
+
+                            <!-- PPN Rate -->
+                            <div id="ppn_rate_wrapper">
+                                <x-input-label for="ppn_rate" :value="__('Tarif PPN (%)')" />
+                                <x-text-input id="ppn_rate" class="block mt-1 w-full" type="number" name="ppn_rate"
+                                            step="0.1" min="0" max="100"
+                                            :value="old('ppn_rate', $settings->has('ppn_rate') ? $settings->get('ppn_rate')->value : '11')" />
+                                <x-input-error :messages="$errors->get('ppn_rate')" class="mt-2" />
+                                <p class="mt-1 text-sm text-gray-500">Tarif PPN saat ini di Indonesia: 11%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- iPaymu Configuration Section -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 mb-6">Konfigurasi iPaymu</h3>
                         <p class="text-sm text-gray-600 mb-4">Pengaturan untuk payment gateway iPaymu</p>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- iPaymu Toggle -->
+                            <div class="md:col-span-2">
+                                <label for="ipaymu_enabled" class="flex items-center cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" id="ipaymu_enabled" name="ipaymu_enabled" value="1" class="sr-only peer"
+                                            {{ old('ipaymu_enabled', $settings->has('ipaymu_enabled') && $settings->get('ipaymu_enabled')->value ? 'checked' : '') }}>
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 transition-colors"></div>
+                                        <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm font-medium text-gray-700">Aktifkan iPaymu</span>
+                                </label>
+                                <p class="mt-1 text-sm text-gray-500 ml-14">Jika dinonaktifkan, metode pembayaran online/transfer tidak akan tersedia di POS</p>
+                            </div>
+
+                            <!-- iPaymu Fields Wrapper -->
+                            <div id="ipaymu_fields_wrapper" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- iPaymu VA -->
                             <div>
                                 <x-input-label for="ipaymu_va" :value="__('Virtual Account (VA)')" />
@@ -154,6 +204,7 @@
                             <div id="test-result" class="md:col-span-2 hidden">
                                 <div id="test-message" class="p-4 rounded-md"></div>
                             </div>
+                            </div><!-- /ipaymu_fields_wrapper -->
                         </div>
                     </div>
                 </div>
@@ -173,6 +224,40 @@
     </div>
 
     <script>
+        // PPN toggle - show/hide rate input
+        const ppnToggle = document.getElementById('ppn_enabled');
+        const ppnRateWrapper = document.getElementById('ppn_rate_wrapper');
+
+        function togglePpnRate() {
+            if (ppnToggle.checked) {
+                ppnRateWrapper.style.opacity = '1';
+                ppnRateWrapper.style.pointerEvents = 'auto';
+            } else {
+                ppnRateWrapper.style.opacity = '0.4';
+                ppnRateWrapper.style.pointerEvents = 'none';
+            }
+        }
+
+        ppnToggle.addEventListener('change', togglePpnRate);
+        togglePpnRate();
+
+        // iPaymu toggle - show/hide fields
+        const ipaymuToggle = document.getElementById('ipaymu_enabled');
+        const ipaymuFieldsWrapper = document.getElementById('ipaymu_fields_wrapper');
+
+        function toggleIpaymuFields() {
+            if (ipaymuToggle.checked) {
+                ipaymuFieldsWrapper.style.opacity = '1';
+                ipaymuFieldsWrapper.style.pointerEvents = 'auto';
+            } else {
+                ipaymuFieldsWrapper.style.opacity = '0.4';
+                ipaymuFieldsWrapper.style.pointerEvents = 'none';
+            }
+        }
+
+        ipaymuToggle.addEventListener('change', toggleIpaymuFields);
+        toggleIpaymuFields();
+
         // Logo preview
         document.getElementById('app_logo').addEventListener('change', function(e) {
             const file = e.target.files[0];

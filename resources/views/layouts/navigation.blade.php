@@ -43,11 +43,19 @@
                         <span>{{ __('app.transactions') }}</span>
                     </x-nav-link>
 
+                    <x-nav-link :href="route('bon.index')" :active="request()->routeIs('bon.*')"
+                                class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10">
+                        <i class="fas fa-file-invoice-dollar text-sm"></i>
+                        <span>Bon/Hutang</span>
+                    </x-nav-link>
+
+                    @if($appSettings['ipaymu_enabled'] ?? false)
                     <x-nav-link :href="route('ipaymu.transactions')" :active="request()->routeIs('ipaymu.*')"
                                 class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10">
                         <i class="fas fa-credit-card text-sm"></i>
                         <span>iPaymu</span>
                     </x-nav-link>
+                    @endif
 
                     @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
                         <div x-data="{ productsOpen: false }" class="relative">
@@ -96,6 +104,11 @@
                                        class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
                                         <i class="fas fa-cog text-sm"></i>
                                         <span>{{ __('app.settings') }}</span>
+                                    </a>
+                                    <a href="{{ route('git-pull.index') }}"
+                                       class="flex items-center space-x-2 px-4 py-2 hover:bg-white/10 text-gray-700 dark:text-gray-300">
+                                        <i class="fas fa-code-branch text-sm"></i>
+                                        <span>Git Pull</span>
                                     </a>
                                 @endif
                             </div>
@@ -353,6 +366,12 @@
                 <span>{{ __('app.transactions') }}</span>
             </a>
 
+            <a href="{{ route('bon.index') }}"
+               class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('bon.*') ? 'bg-blue-100 text-blue-800' : '' }}">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Bon/Hutang</span>
+            </a>
+
             @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
                 <!-- Management Section -->
                 <div class="pt-3 border-t border-white/20">
@@ -394,6 +413,11 @@
                            class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('settings.*') ? 'bg-blue-100 text-blue-800' : '' }}">
                             <i class="fas fa-cog"></i>
                             <span>{{ __('app.settings') }}</span>
+                        </a>
+                        <a href="{{ route('git-pull.index') }}"
+                           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 text-gray-700 dark:text-gray-300 {{ request()->routeIs('git-pull.*') ? 'bg-blue-100 text-blue-800' : '' }}">
+                            <i class="fas fa-code-branch"></i>
+                            <span>Git Pull</span>
                         </a>
                     @endif
                 </div>

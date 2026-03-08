@@ -87,6 +87,11 @@
                             </div>
                             
                             <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Stok Awal</label>
+                                <p class="mt-1 text-lg text-gray-900 dark:text-white">{{ $product->initial_stock }} unit</p>
+                            </div>
+
+                            <div>
                                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Stok Saat Ini</label>
                                 <p class="mt-1 text-lg text-gray-900 dark:text-white">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
@@ -95,7 +100,12 @@
                                     </span>
                                 </p>
                             </div>
-                            
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Terjual</label>
+                                <p class="mt-1 text-lg text-gray-900 dark:text-white">{{ $product->initial_stock - $product->stock }} unit</p>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Minimum Stok</label>
                                 <p class="mt-1 text-lg text-gray-900 dark:text-white">{{ $product->min_stock }} unit</p>

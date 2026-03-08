@@ -9,13 +9,13 @@
         <div class="p-6 text-gray-900">
             <!-- Filters -->
             <div class="mb-6">
-                <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <div>
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Cari nomor transaksi atau kasir..." 
+                        <input type="text" name="search" value="{{ request('search') }}"
+                               placeholder="Cari nomor transaksi atau kasir..."
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
-                    
+
                     <div>
                         <select name="status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Semua Status</option>
@@ -24,23 +24,33 @@
                             <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Batal</option>
                         </select>
                     </div>
-                    
+
                     <div>
                         <select name="payment_method" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Semua Metode</option>
                             <option value="cash" {{ request('payment_method') === 'cash' ? 'selected' : '' }}>Tunai</option>
                             <option value="card" {{ request('payment_method') === 'card' ? 'selected' : '' }}>Kartu</option>
                             <option value="ewallet" {{ request('payment_method') === 'ewallet' ? 'selected' : '' }}>E-Wallet</option>
+                            <option value="bon" {{ request('payment_method') === 'bon' ? 'selected' : '' }}>Bon/Hutang</option>
+                            <option value="online" {{ request('payment_method') === 'online' ? 'selected' : '' }}>Online/Transfer</option>
                         </select>
                     </div>
-                    
+
                     <div>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" 
+                        <select name="bon_status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Status Bon</option>
+                            <option value="unpaid" {{ request('bon_status') === 'unpaid' ? 'selected' : '' }}>Belum Lunas</option>
+                            <option value="paid" {{ request('bon_status') === 'paid' ? 'selected' : '' }}>Sudah Lunas</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
-                    
+
                     <div class="flex space-x-2">
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" 
+                        <input type="date" name="date_to" value="{{ request('date_to') }}"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
                             Filter
@@ -48,7 +58,7 @@
                     </div>
                 </form>
                 
-                @if(request()->hasAny(['search', 'status', 'payment_method', 'date_from', 'date_to']))
+                @if(request()->hasAny(['search', 'status', 'payment_method', 'bon_status', 'date_from', 'date_to']))
                     <div class="mt-2">
                         <a href="{{ route('transactions.index') }}" class="text-sm text-red-600 hover:text-red-800">
                             Reset Filter
@@ -104,9 +114,18 @@
                                             @case('cash') Tunai @break
                                             @case('card') Kartu @break
                                             @case('ewallet') E-Wallet @break
+                                            @case('bon') Bon/Hutang @break
+                                            @case('online') Online/Transfer @break
                                             @default {{ ucfirst($transaction->payment_method) }}
                                         @endswitch
                                     </div>
+                                    @if($transaction->payment_method === 'bon')
+                                        @if($transaction->isBonPaid())
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Lunas</span>
+                                        @else
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Belum Lunas</span>
+                                        @endif
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @switch($transaction->status)

@@ -24,8 +24,10 @@ class SettingsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Check if settings table exists and has been migrated
-        if (Schema::hasTable('settings')) {
-            try {
+        try {
+            if (!Schema::hasTable('settings')) {
+                return;
+            }
                 // Initialize default settings if needed
                 Setting::initializeDefaults();
                 
@@ -35,10 +37,9 @@ class SettingsServiceProvider extends ServiceProvider
                 // Share settings with all views
                 $this->shareSettingsWithViews();
                 
-            } catch (\Exception $e) {
-                // If there's an error (like during migration), skip settings loading
-                \Log::warning('Settings could not be loaded: ' . $e->getMessage());
-            }
+        } catch (\Exception $e) {
+            // If there's an error (like database not existing), skip settings loading
+            return;
         }
     }
 
@@ -83,7 +84,8 @@ class SettingsServiceProvider extends ServiceProvider
                     'company_name' => Setting::get('company_name', 'Your Company Name'),
                     'company_address' => Setting::get('company_address', 'Your Company Address'),
                     'company_phone' => Setting::get('company_phone', 'Your Phone Number'),
-                    'receipt_footer' => Setting::get('receipt_footer', 'Terima kasih atas kunjungan Anda!')
+                    'receipt_footer' => Setting::get('receipt_footer', 'Terima kasih atas kunjungan Anda!'),
+                    'ipaymu_enabled' => Setting::get('ipaymu_enabled', false),
                 ];
             } catch (\Exception $e) {
                 // Fallback settings if database is not available
