@@ -12,7 +12,9 @@
       "Bash(php artisan make:migration add_bon_to_payment_method_enum_in_transactions_table)",
       "Bash(php artisan migrate)",
       "Bash(php artisan tinker --execute=\"App\\\\Models\\\\Setting::clearCache\\(\\); App\\\\Models\\\\Setting::initializeDefaults\\(\\); echo ''ipaymu_enabled = '' . \\(App\\\\Models\\\\Setting::get\\(''ipaymu_enabled''\\) ? ''true'' : ''false''\\);\")",
-      "Bash(php artisan route:list --name=git-pull)"
+      "Bash(php artisan route:list --name=git-pull)",
+      "Bash(git remote set-url origin git@github.com:krisnaxyoga/pos-universal.git)",
+      "Bash(git remote get-url origin)"
     ],
     "deny": [],
     "ask": []
