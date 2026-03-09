@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const SHELL_CACHE = `pos-shell-${CACHE_VERSION}`;
 const CDN_CACHE = `pos-cdn-${CACHE_VERSION}`;
 const IMAGE_CACHE = `pos-images-${CACHE_VERSION}`;
@@ -6,13 +6,22 @@ const PAGE_CACHE = `pos-pages-${CACHE_VERSION}`;
 
 const CDN_URLS = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
+];
+
+const PWA_SCRIPTS = [
+    '/js/pwa/idb-helper.js',
+    '/js/pwa/offline-products.js',
+    '/js/pwa/offline-sync.js',
+    '/js/pwa/offline-transactions.js',
+    '/js/pwa/sw-register.js',
 ];
 
 // Install: precache static assets
 self.addEventListener('install', (event) => {
     event.waitUntil(
         (async () => {
-            // Cache Vite build assets
+            // Cache Vite build assets + PWA scripts
             try {
                 const manifestResponse = await fetch('/build/manifest.json');
                 const manifest = await manifestResponse.json();
@@ -21,11 +30,15 @@ self.addEventListener('install', (event) => {
                     .map(entry => `/build/${entry.file}`);
 
                 const shellCache = await caches.open(SHELL_CACHE);
-                await shellCache.addAll(['/offline', ...assetUrls]);
+                await shellCache.addAll(['/offline', ...assetUrls, ...PWA_SCRIPTS]);
             } catch (e) {
                 console.warn('SW: Could not precache build assets:', e);
                 const shellCache = await caches.open(SHELL_CACHE);
-                await shellCache.addAll(['/offline']);
+                try {
+                    await shellCache.addAll(['/offline', ...PWA_SCRIPTS]);
+                } catch (e2) {
+                    await shellCache.addAll(['/offline']);
+                }
             }
 
             // Cache CDN assets
@@ -70,14 +83,20 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // PWA scripts: Cache-First (precached during install)
+    if (url.pathname.startsWith('/js/pwa/')) {
+        event.respondWith(cacheFirst(event.request, SHELL_CACHE));
+        return;
+    }
+
     // CDN resources: Cache-First
     if (url.hostname !== location.hostname) {
         event.respondWith(cacheFirst(event.request, CDN_CACHE));
         return;
     }
 
-    // Product images: Cache-First
-    if (url.pathname.startsWith('/images/products/')) {
+    // Product images & logo images: Cache-First
+    if (url.pathname.startsWith('/images/')) {
         event.respondWith(cacheFirst(event.request, IMAGE_CACHE));
         return;
     }
@@ -103,8 +122,8 @@ self.addEventListener('fetch', (event) => {
         return; // Let browser handle normally
     }
 
-    // Everything else: Network-First with offline fallback
-    event.respondWith(networkFirstWithFallback(event.request));
+    // Everything else: Network-First with caching
+    event.respondWith(networkFirstWithCache(event.request));
 });
 
 // Cache-First strategy
@@ -140,10 +159,15 @@ async function networkFirst(request, cacheName) {
     }
 }
 
-// Network-First with offline fallback page
-async function networkFirstWithFallback(request) {
+// Network-First with caching (for misc resources)
+async function networkFirstWithCache(request) {
     try {
-        return await fetch(request);
+        const response = await fetch(request);
+        if (response.ok) {
+            const cache = await caches.open(SHELL_CACHE);
+            cache.put(request, response.clone());
+        }
+        return response;
     } catch (e) {
         const cached = await caches.match(request);
         if (cached) return cached;

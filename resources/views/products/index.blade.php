@@ -322,11 +322,27 @@
     <script src="/js/pwa/idb-helper.js"></script>
     <script src="/js/pwa/offline-products.js"></script>
     <script>
-        // Render offline product list if offline
         document.addEventListener('DOMContentLoaded', () => {
+            // Render offline product list if offline
             setTimeout(() => {
                 if (window.OfflineProducts) window.OfflineProducts.renderOfflineList();
             }, 500);
+
+            // Prefetch create page & cache categories for offline use
+            if (navigator.onLine) {
+                // Prefetch /products/create so it's cached by SW
+                fetch('/products/create', { credentials: 'same-origin' }).catch(() => {});
+
+                // Cache categories to IndexedDB for offline form rendering
+                const categoryOptions = document.querySelectorAll('select[name="category_id"] option[value]');
+                if (categoryOptions.length > 0 && window.posDB) {
+                    const categories = [];
+                    categoryOptions.forEach(opt => {
+                        if (opt.value) categories.push({ id: parseInt(opt.value), name: opt.textContent.trim() });
+                    });
+                    window.posDB.setMeta('categories', categories).catch(() => {});
+                }
+            }
         });
     </script>
 </x-app-layout>

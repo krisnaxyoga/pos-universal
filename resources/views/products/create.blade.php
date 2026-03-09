@@ -3,6 +3,9 @@
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Tambah Produk Baru
+                <span id="offline-create-badge" class="hidden ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
+                    <i class="fas fa-wifi-slash mr-1"></i>Offline
+                </span>
             </h2>
             <a href="{{ route('products.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                 Kembali
@@ -202,10 +205,44 @@
     <script src="/js/pwa/idb-helper.js"></script>
     <script src="/js/pwa/offline-products.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const form = document.querySelector('form[action*="products"]');
             if (form && window.OfflineProducts) {
                 OfflineProducts.interceptForm(form, 'create', null);
+            }
+
+            const isOnline = window.connectivityMonitor
+                ? window.connectivityMonitor.isOnline
+                : navigator.onLine;
+
+            if (!isOnline) {
+                // Show offline badge
+                const badge = document.getElementById('offline-create-badge');
+                if (badge) badge.classList.remove('hidden');
+
+                // Populate categories from IndexedDB if select is empty or stale
+                if (window.posDB) {
+                    try {
+                        const categories = await window.posDB.getMeta('categories');
+                        if (categories && categories.length > 0) {
+                            const select = document.getElementById('category_id');
+                            if (select) {
+                                // Keep first "Pilih Kategori" option, replace rest
+                                const firstOption = select.options[0];
+                                select.innerHTML = '';
+                                select.appendChild(firstOption);
+                                categories.forEach(cat => {
+                                    const opt = document.createElement('option');
+                                    opt.value = cat.id;
+                                    opt.textContent = cat.name;
+                                    select.appendChild(opt);
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not load categories from IndexedDB:', e);
+                    }
+                }
             }
         });
     </script>

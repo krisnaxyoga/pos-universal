@@ -149,10 +149,11 @@ class StoreController extends Controller
             // Verify product still exists and active
             $product = Product::find($item['id']);
             if ($product && $product->is_active) {
-                // Update price in case it changed
+                // Update data in case it changed
                 $item['price'] = $product->price;
                 $item['subtotal'] = $item['quantity'] * $product->price;
                 $item['stock'] = $product->stock;
+                $item['image'] = $product->image;
                 $cartItems[] = $item;
                 $total += $item['subtotal'];
             }
@@ -242,6 +243,7 @@ class StoreController extends Controller
             if ($product && $product->is_active && $product->stock >= $item['quantity']) {
                 $item['price'] = $product->price;
                 $item['subtotal'] = $item['quantity'] * $product->price;
+                $item['image'] = $product->image;
                 $cartItems[] = $item;
                 $total += $item['subtotal'];
             }

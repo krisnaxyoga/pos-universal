@@ -15,7 +15,8 @@
       "Bash(php artisan route:list --name=git-pull)",
       "Bash(git remote set-url origin git@github.com:krisnaxyoga/pos-universal.git)",
       "Bash(git remote get-url origin)",
-      "Bash(php artisan make:migration add_offline_id_to_transactions_table --table=transactions)"
+      "Bash(php artisan make:migration add_offline_id_to_transactions_table --table=transactions)",
+      "Bash(php artisan view:clear)"
     ],
     "deny": [],
     "ask": []
