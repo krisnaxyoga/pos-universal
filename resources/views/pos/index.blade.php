@@ -505,6 +505,8 @@
         </div>
     </div>
 
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-sync.js"></script>
     <script>
         // Global variables
         let cartItems = [];
@@ -518,7 +520,10 @@
             draftSave: '{{ route("pos.draft.save") }}',
             draftLoad: '{{ route("pos.draft.load", ":id") }}'.replace(':id', ''),
             draftDelete: '{{ url("pos/draft") }}',
-            customerSearch: '{{ route("pos.customer-search") }}'
+            customerSearch: '{{ route("pos.customer-search") }}',
+            syncTransaction: '{{ route("api.pos.sync-transaction") }}',
+            syncProducts: '{{ route("api.pos.products") }}',
+            csrfToken: '{{ route("api.csrf-token") }}'
         };
 
         // Initialize
@@ -526,6 +531,18 @@
             initializeEventListeners();
             setDefaultPaymentMethod();
             updateCartDisplay();
+
+            // Save products to IndexedDB for offline use
+            if (window.posDB && products.length > 0) {
+                window.posDB.saveProducts(products).catch(e => console.warn('Failed to cache products:', e));
+                window.posDB.setMeta('ppn_enabled', ppnEnabled).catch(() => {});
+                window.posDB.setMeta('ppn_rate', ppnRate).catch(() => {});
+            }
+
+            // Trigger sync if online and there are pending transactions
+            if (window.syncManager) {
+                window.syncManager.syncAll();
+            }
             
             // Load retry transaction if available
             @if($retryTransaction)
@@ -1058,13 +1075,20 @@
                 alert('Lengkapi data pembayaran terlebih dahulu');
                 return;
             }
-            
+
             const isMobile = window.innerWidth < 768;
             const prefix = isMobile ? 'mobile-' : '';
-            
+
             const paymentMethod = document.getElementById(`${prefix}payment-method`)?.value || 'cash';
             const paidAmount = parseFloat(document.getElementById(`${prefix}paid-amount`)?.value) || calculateTotal();
-            
+
+            // Block online payment when offline
+            const isOnline = window.connectivityMonitor ? window.connectivityMonitor.isOnline : navigator.onLine;
+            if (!isOnline && paymentMethod === 'online') {
+                alert('Pembayaran online tidak tersedia dalam mode offline.');
+                return;
+            }
+
             const transactionData = {
                 items: cartItems.map(item => ({
                     product_id: item.id,
@@ -1077,7 +1101,7 @@
                 paid: paidAmount,
                 payment_method: paymentMethod
             };
-            
+
             if (paymentMethod === 'online') {
                 transactionData.customer_info = {
                     name: document.getElementById(`${prefix}customer-name`)?.value,
@@ -1094,48 +1118,154 @@
                     address: document.getElementById(`${prefix}bon-customer-address`)?.value || ''
                 };
             }
-            
-            try {
-                const response = await fetch(routes.posTransaction, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify(transactionData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Clear cart without confirmation since transaction is successful
-                    cartItems = [];
-                    updateCartDisplay();
 
-                    if (result.redirect && result.payment_url) {
-                        // For online payments, redirect to payment page
-                        alert('Transaksi online berhasil dibuat! Anda akan diarahkan ke halaman pembayaran.');
-                        window.location.href = result.payment_url;
-                    } else if (result.is_bon) {
-                        // For bon/hutang payments
-                        alert('Transaksi bon/hutang berhasil dicatat!');
-                        if (result.transaction) {
-                            window.location.href = `/pos/receipt/${result.transaction.id}`;
+            // If online, try server first
+            if (isOnline) {
+                try {
+                    const response = await fetch(routes.posTransaction, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify(transactionData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        cartItems = [];
+                        updateCartDisplay();
+
+                        if (result.redirect && result.payment_url) {
+                            alert('Transaksi online berhasil dibuat! Anda akan diarahkan ke halaman pembayaran.');
+                            window.location.href = result.payment_url;
+                        } else if (result.is_bon) {
+                            alert('Transaksi bon/hutang berhasil dicatat!');
+                            if (result.transaction) {
+                                window.location.href = `/pos/receipt/${result.transaction.id}`;
+                            }
+                        } else {
+                            alert('Transaksi berhasil diproses!');
+                            if (result.transaction) {
+                                window.location.href = `/pos/receipt/${result.transaction.id}`;
+                            }
                         }
+                        return; // Success online — done
                     } else {
-                        // For other payment methods, go to receipt
-                        alert('Transaksi berhasil diproses!');
-                        if (result.transaction) {
-                            window.location.href = `/pos/receipt/${result.transaction.id}`;
-                        }
+                        alert(result.message || 'Terjadi kesalahan saat memproses transaksi');
+                        return;
                     }
-                } else {
-                    alert(result.message || 'Terjadi kesalahan saat memproses transaksi');
+                } catch (networkError) {
+                    console.warn('Network error, falling through to offline queue:', networkError);
+                    // Fall through to offline queue below
                 }
-            } catch (error) {
-                console.error('Transaction error:', error);
-                alert('Terjadi kesalahan jaringan. Silakan coba lagi.');
             }
+
+            // OFFLINE PATH: Queue transaction locally
+            await queueOfflineTransaction(transactionData);
+        }
+
+        async function queueOfflineTransaction(transactionData) {
+            try {
+                const enrichedItems = transactionData.items.map(item => {
+                    const product = products.find(p => p.id === item.product_id);
+                    return {
+                        ...item,
+                        product_name: product?.name || 'Unknown',
+                        product_price: parseFloat(product?.price) || 0
+                    };
+                });
+
+                const offlineTx = {
+                    offline_id: crypto.randomUUID(),
+                    items: enrichedItems,
+                    subtotal: transactionData.subtotal,
+                    discount: transactionData.discount || 0,
+                    tax: transactionData.tax || 0,
+                    total: transactionData.total,
+                    paid: transactionData.paid,
+                    change: Math.max(0, transactionData.paid - transactionData.total),
+                    payment_method: transactionData.payment_method,
+                    customer_info: transactionData.customer_info || null,
+                    status: 'pending',
+                    error_message: null,
+                    created_at: new Date().toISOString(),
+                    synced_at: null,
+                    retry_count: 0
+                };
+
+                await window.posDB.queueTransaction(offlineTx);
+
+                // Decrement local stock
+                for (const item of enrichedItems) {
+                    await window.posDB.decrementLocalStock(item.product_id, item.quantity);
+                    // Also update in-memory products array
+                    const p = products.find(pr => pr.id === item.product_id);
+                    if (p) p.stock = Math.max(0, (parseInt(p.stock) || 0) - item.quantity);
+                }
+
+                // Clear cart
+                cartItems = [];
+                updateCartDisplay();
+
+                // Update badge
+                if (typeof window.updatePendingSyncBadge === 'function') {
+                    window.updatePendingSyncBadge();
+                }
+
+                // Show offline receipt
+                showOfflineReceipt(offlineTx);
+
+            } catch (error) {
+                console.error('Failed to queue offline transaction:', error);
+                alert('Gagal menyimpan transaksi offline. Coba lagi.');
+            }
+        }
+
+        function showOfflineReceipt(tx) {
+            const itemsHtml = tx.items.map(item =>
+                `<div class="flex justify-between text-sm py-1">
+                    <span>${item.product_name} x${item.quantity}</span>
+                    <span>Rp ${formatPrice(item.product_price * item.quantity)}</span>
+                </div>`
+            ).join('');
+
+            const paymentLabels = { cash: 'Tunai', card: 'Kartu', ewallet: 'E-Wallet', bon: 'Bon/Hutang' };
+            const changeHtml = tx.payment_method !== 'bon' && tx.change > 0
+                ? `<div class="flex justify-between text-sm"><span>Kembalian</span><span>Rp ${formatPrice(tx.change)}</span></div>` : '';
+
+            const html = `
+                <div id="offline-receipt-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6">
+                        <div class="text-center mb-4">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-wifi text-yellow-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Transaksi Offline Tersimpan</h3>
+                            <span class="inline-block mt-1 px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
+                                Belum Disinkronkan
+                            </span>
+                        </div>
+                        <div class="border-t border-b py-3 my-3 space-y-1">
+                            ${itemsHtml}
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-sm"><span>Subtotal</span><span>Rp ${formatPrice(tx.subtotal)}</span></div>
+                            ${tx.tax > 0 ? `<div class="flex justify-between text-sm"><span>PPN</span><span>Rp ${formatPrice(tx.tax)}</span></div>` : ''}
+                            <div class="flex justify-between font-bold"><span>Total</span><span>Rp ${formatPrice(tx.total)}</span></div>
+                            <div class="flex justify-between text-sm"><span>Bayar (${paymentLabels[tx.payment_method] || tx.payment_method})</span><span>Rp ${formatPrice(tx.paid)}</span></div>
+                            ${changeHtml}
+                        </div>
+                        ${tx.customer_info?.name ? `<div class="mt-3 text-sm text-gray-600"><i class="fas fa-user mr-1"></i>${tx.customer_info.name}</div>` : ''}
+                        <div class="mt-2 text-xs text-gray-400">${new Date(tx.created_at).toLocaleString('id-ID')}</div>
+                        <button onclick="document.getElementById('offline-receipt-modal').remove()"
+                                class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
+                            OK
+                        </button>
+                    </div>
+                </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
         }
 
         function showDraftModal() {

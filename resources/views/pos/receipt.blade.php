@@ -238,13 +238,16 @@
         </div>
     </div>
 
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-transactions.js"></script>
     <script>
-        // Auto print when page loads
         window.onload = function() {
+            if (!navigator.onLine) {
+                OfflineTransactions.renderOfflineReceipt({{ $transaction->id }});
+            }
             window.print();
         }
-        
-        // Close window after printing
+
         window.onafterprint = function() {
             window.close();
         }

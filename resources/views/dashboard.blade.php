@@ -27,6 +27,28 @@
         </div>
     </div>
 
+    <!-- Bon/Hutang Alert -->
+    @if($bonUnpaidCount > 0)
+    <div class="mb-6">
+        <a href="{{ route('bon.index') }}" class="block glass rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-50 transition-colors">
+            <div class="p-4 sm:p-5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-file-invoice-dollar text-white text-lg"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-red-800">Bon/Hutang Belum Lunas</p>
+                        <p class="text-lg sm:text-xl font-bold text-red-900">{{ $bonUnpaidCount }} bon — Rp {{ number_format($bonUnpaidTotal, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 text-red-400">
+                    <i class="fas fa-chevron-right text-lg"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    @endif
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div class="glass rounded-xl shadow-sm hover:shadow-md transition-shadow">
@@ -111,6 +133,14 @@
                    class="flex flex-col items-center p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl text-white hover:scale-105 transition-transform">
                     <i class="fas fa-receipt text-2xl mb-2"></i>
                     <span class="text-sm font-medium">{{ __('app.transactions') }}</span>
+                </a>
+                <a href="{{ route('bon.index') }}"
+                   class="flex flex-col items-center p-4 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white hover:scale-105 transition-transform relative">
+                    <i class="fas fa-file-invoice-dollar text-2xl mb-2"></i>
+                    <span class="text-sm font-medium">Bon/Hutang</span>
+                    @if($bonUnpaidCount > 0)
+                        <span class="absolute top-1 right-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ $bonUnpaidCount }}</span>
+                    @endif
                 </a>
                 @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
                     <a href="{{ route('products.index') }}"
@@ -247,11 +277,41 @@
                     <i class="fas fa-history mr-2"></i>
                     {{ __('app.transaction_history') }}
                 </a>
+
+                <a href="{{ route('bon.index') }}"
+                   class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg font-semibold text-white hover:from-red-600 hover:to-rose-700 transition-all hover:scale-105 relative">
+                    <i class="fas fa-file-invoice-dollar mr-2"></i>
+                    Bon/Hutang
+                    @if($bonUnpaidCount > 0)
+                        <span class="ml-2 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ $bonUnpaidCount }}</span>
+                    @endif
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- Pending Offline Transactions -->
+    <div id="offline-pending-card" class="hidden mt-6 glass rounded-xl shadow-sm border border-yellow-200">
+        <div class="p-4 sm:p-5 flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-wifi text-yellow-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-yellow-800">Transaksi Offline Menunggu Sync</p>
+                    <p class="text-lg font-bold text-yellow-900"><span id="offline-pending-count">0</span> transaksi</p>
+                </div>
+            </div>
+            <button onclick="window.syncManager && window.syncManager.syncAll()"
+                    class="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium">
+                <i class="fas fa-sync mr-1"></i> Sync
+            </button>
+        </div>
+    </div>
+
     <!-- Real-time Clock Script -->
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-sync.js"></script>
     <script>
         function updateClock() {
             const now = new Date();
@@ -266,8 +326,31 @@
             }
         }
 
-        // Update immediately and then every second
         updateClock();
         setInterval(updateClock, 1000);
+
+        // Check for pending offline transactions
+        (async function() {
+            if (!window.posDB) return;
+            try {
+                const count = await window.posDB.getPendingCount();
+                if (count > 0) {
+                    const card = document.getElementById('offline-pending-card');
+                    const countEl = document.getElementById('offline-pending-count');
+                    if (card && countEl) {
+                        countEl.textContent = count;
+                        card.classList.remove('hidden');
+                    }
+                }
+                // Cache dashboard stats for offline
+                await window.posDB.setMeta('dashboard_cached_at', new Date().toISOString());
+                await window.posDB.setMeta('dashboard_stats', {
+                    todaySales: {{ $todaySales }},
+                    todayTransactions: {{ $todayTransactions }},
+                    lowStockProducts: {{ $lowStockProducts }},
+                    totalProducts: {{ $totalProducts }}
+                });
+            } catch (e) {}
+        })();
     </script>
 </x-app-layout>

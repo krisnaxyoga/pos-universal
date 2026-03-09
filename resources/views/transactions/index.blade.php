@@ -5,6 +5,14 @@
         </h2>
     </x-slot>
 
+    <!-- Offline Notice -->
+    <div id="offline-tx-notice" class="hidden mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div class="flex items-center text-yellow-800">
+            <i class="fas fa-wifi-slash mr-2"></i>
+            <span class="text-sm font-medium">Mode Offline — Menampilkan data dari cache lokal (terakhir: <span id="offline-tx-time">-</span>)</span>
+        </div>
+    </div>
+
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900">
             <!-- Filters -->
@@ -216,4 +224,15 @@
             @endif
         </div>
     </div>
+
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-transactions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cache transactions when online
+            OfflineTransactions.cacheFromServer();
+            // Render from IndexedDB when offline
+            OfflineTransactions.renderTransactionList();
+        });
+    </script>
 </x-app-layout>

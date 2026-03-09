@@ -287,6 +287,33 @@ class ProductController extends Controller
     }
 
     /**
+     * Lookup product by barcode (AJAX)
+     */
+    public function lookupBarcode(Request $request): JsonResponse
+    {
+        $request->validate(['barcode' => 'required|string']);
+
+        $product = Product::where('barcode', $request->barcode)->first();
+
+        if (!$product) {
+            return response()->json(['found' => false]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'price' => $product->price,
+                'cost' => $product->cost,
+                'stock' => $product->stock,
+                'category_id' => $product->category_id,
+            ]
+        ]);
+    }
+
+    /**
      * Export products to Excel
      */
     public function export()

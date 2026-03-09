@@ -48,6 +48,8 @@ class Transaction extends Model
         // Bon/Hutang fields
         'bon_paid_at',
         'bon_paid_amount',
+        // Offline sync
+        'offline_id',
     ];
 
     protected $casts = [

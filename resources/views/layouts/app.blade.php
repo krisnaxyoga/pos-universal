@@ -5,6 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#1f2937">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <link rel="manifest" href="/pwa-manifest.json">
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 
         <title>{{ $appSettings['app_name'] ?? config('app.name', 'Laravel') }}</title>
 
@@ -200,6 +204,27 @@
         </style>
     </head>
     <body class="font-sans antialiased h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
+        <!-- Offline Banner -->
+        <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 z-[100] bg-yellow-500 text-yellow-900 text-center py-2 px-4 text-sm font-medium shadow-md transition-transform -translate-y-full">
+            <i class="fas fa-wifi mr-1"></i>
+            Mode Offline — Transaksi disimpan lokal, sync otomatis saat online
+            <span id="pending-sync-count" class="ml-2 bg-yellow-700 text-yellow-100 px-2 py-0.5 rounded-full text-xs hidden">0</span>
+        </div>
+
+        <!-- Sync Banner -->
+        <div id="sync-banner" class="hidden fixed top-0 left-0 right-0 z-[100] bg-blue-500 text-white text-center py-2 px-4 text-sm font-medium shadow-md">
+            <i class="fas fa-sync fa-spin mr-1"></i>
+            Menyinkronkan transaksi offline...
+        </div>
+
+        <!-- SW Update Banner -->
+        <div id="sw-update-banner" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-[100] bg-indigo-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
+            <span><i class="fas fa-download mr-2"></i>Update tersedia</span>
+            <button onclick="reloadForUpdate()" class="bg-white text-indigo-600 px-3 py-1 rounded font-semibold text-sm hover:bg-indigo-50">
+                Muat Ulang
+            </button>
+        </div>
+
         <div class="min-h-screen flex flex-col">
             @include('layouts.navigation')
 
@@ -253,6 +278,9 @@
             </main>
 
         </div>
+
+        <!-- PWA Scripts -->
+        <script src="/js/pwa/sw-register.js" defer></script>
 
         <!-- Auto-hide notifications after 5 seconds -->
         <script>

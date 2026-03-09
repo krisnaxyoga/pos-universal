@@ -18,6 +18,12 @@
         </div>
     </x-slot>
 
+    <!-- Offline product notice -->
+    <div id="offline-product-notice" class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+        <i class="fas fa-wifi mr-1"></i>
+        <strong>Mode Offline</strong> — Menampilkan data produk dari cache lokal. Perubahan akan disinkronkan saat online.
+    </div>
+
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900">
             <!-- Filters -->
@@ -286,5 +292,41 @@
                 });
             }
         }
+
+        // Offline: intercept delete forms when offline
+        document.querySelectorAll('form[action*="products/"]').forEach(form => {
+            if (!form.querySelector('input[name="_method"][value="DELETE"]')) return;
+            const originalSubmit = form.onsubmit;
+            form.onsubmit = null;
+            form.addEventListener('submit', async function(e) {
+                const isOnline = window.connectivityMonitor ? window.connectivityMonitor.isOnline : navigator.onLine;
+                if (isOnline) {
+                    if (!confirm('Yakin ingin menghapus produk ini?')) { e.preventDefault(); return; }
+                    return; // Online — normal submit
+                }
+                e.preventDefault();
+                // Extract product ID from action URL
+                const match = form.action.match(/products\/(\d+)/);
+                if (!match) return;
+                const productId = parseInt(match[1]);
+                // Find product name from the same row
+                const row = form.closest('tr');
+                const nameEl = row ? row.querySelector('.font-medium') : null;
+                const productName = nameEl ? nameEl.textContent.trim() : 'Unknown';
+                const deleted = await OfflineProducts.deleteOffline(productId, productName);
+                if (deleted) { row && row.remove(); }
+            });
+        });
+    </script>
+
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-products.js"></script>
+    <script>
+        // Render offline product list if offline
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.OfflineProducts) window.OfflineProducts.renderOfflineList();
+            }, 500);
+        });
     </script>
 </x-app-layout>

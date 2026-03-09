@@ -41,6 +41,9 @@ Route::get('payment/mock-success', function() {
     ]);
 })->name('payment.mock-success');
 
+// Offline fallback page (no auth)
+Route::get('/offline', fn() => view('offline'))->name('offline');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -50,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::middleware(['role:admin,supervisor'])->group(function () {
         Route::resource('categories', CategoryController::class);
+        Route::get('products/lookup-barcode', [ProductController::class, 'lookupBarcode'])->name('products.lookup-barcode');
         Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
         Route::get('products/import-template', [ProductController::class, 'importTemplate'])->name('products.import-template');
         Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
@@ -86,6 +90,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Customer search for POS
         Route::get('pos/customer-search', [PosController::class, 'searchCustomer'])->name('pos.customer-search');
+
+        // Offline sync API
+        Route::post('api/pos/sync-transaction', [App\Http\Controllers\Api\SyncController::class, 'syncTransaction'])->name('api.pos.sync-transaction');
+        Route::get('api/pos/products', [App\Http\Controllers\Api\SyncController::class, 'products'])->name('api.pos.products');
+        Route::get('api/pos/transactions', [App\Http\Controllers\Api\SyncController::class, 'transactions'])->name('api.pos.transactions');
+        Route::get('api/csrf-token', [App\Http\Controllers\Api\SyncController::class, 'csrfToken'])->name('api.csrf-token');
+        Route::post('api/pos/sync-product', [App\Http\Controllers\Api\SyncController::class, 'syncProductAction'])->name('api.pos.sync-product');
 
         // Bon/Hutang management
         Route::get('bon', [App\Http\Controllers\BonController::class, 'index'])->name('bon.index');

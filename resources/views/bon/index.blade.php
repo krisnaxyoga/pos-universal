@@ -5,6 +5,14 @@
         </h2>
     </x-slot>
 
+    <!-- Offline Notice -->
+    <div id="offline-bon-notice" class="hidden mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div class="flex items-center text-yellow-800">
+            <i class="fas fa-wifi-slash mr-2"></i>
+            <span class="text-sm font-medium">Mode Offline — Data dari cache lokal (terakhir: <span id="offline-bon-time">-</span>). Pelunasan bon tidak tersedia saat offline.</span>
+        </div>
+    </div>
+
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-4 sm:p-6 text-gray-900">
 
@@ -311,5 +319,14 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
+    </script>
+
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-transactions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            OfflineTransactions.cacheFromServer();
+            OfflineTransactions.renderBonList();
+        });
     </script>
 </x-app-layout>

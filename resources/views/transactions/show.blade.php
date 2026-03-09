@@ -22,6 +22,14 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Offline Notice -->
+            <div id="offline-detail-notice" class="hidden mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <div class="flex items-center text-yellow-800">
+                    <i class="fas fa-wifi-slash mr-2"></i>
+                    <span class="text-sm font-medium">Mode Offline — Data dari cache terakhir kunjungan</span>
+                </div>
+            </div>
+
             <!-- Transaction Header -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 bg-white border-b border-gray-200">
@@ -516,6 +524,14 @@
             if (e.key === 'Escape') {
                 closeRefundModal();
             }
+        });
+    </script>
+
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-transactions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            OfflineTransactions.renderTransactionDetail({{ $transaction->id }});
         });
     </script>
 </x-app-layout>

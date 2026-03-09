@@ -59,8 +59,19 @@
                             <label for="barcode" class="block text-sm font-medium text-gray-700">
                                 Barcode
                             </label>
-                            <input type="text" name="barcode" id="barcode" value="{{ old('barcode') }}"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('barcode') border-red-500 @enderror">
+                            <div class="mt-1 flex">
+                                <input type="text" name="barcode" id="barcode" value="{{ old('barcode') }}"
+                                       placeholder="Ketik manual atau scan barcode"
+                                       class="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('barcode') border-red-500 @enderror">
+                                <button type="button" onclick="openBarcodeScanner()"
+                                        class="inline-flex items-center px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-r-md border border-indigo-600 transition-colors"
+                                        title="Scan dengan kamera">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i> Bisa scan pakai kamera atau scanner fisik (USB/Bluetooth)
+                            </p>
                             @error('barcode')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -186,4 +197,16 @@
             </form>
         </div>
     </div>
+    @include('partials.barcode-scanner')
+
+    <script src="/js/pwa/idb-helper.js"></script>
+    <script src="/js/pwa/offline-products.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form[action*="products"]');
+            if (form && window.OfflineProducts) {
+                OfflineProducts.interceptForm(form, 'create', null);
+            }
+        });
+    </script>
 </x-app-layout>

@@ -31,16 +31,21 @@ class DashboardController extends Controller
             
         $salesChart = $this->getSalesChartData();
         $topProducts = $this->getTopProducts();
-        
+
+        $bonUnpaidCount = Transaction::bon()->bonUnpaid()->where('is_draft', false)->count();
+        $bonUnpaidTotal = Transaction::bon()->bonUnpaid()->where('is_draft', false)->sum('total');
+
         return view('dashboard', compact(
             'todaySales',
-            'todayTransactions', 
+            'todayTransactions',
             'lowStockProducts',
             'totalProducts',
             'recentTransactions',
             'lowStockItems',
             'salesChart',
-            'topProducts'
+            'topProducts',
+            'bonUnpaidCount',
+            'bonUnpaidTotal'
         ));
     }
     
