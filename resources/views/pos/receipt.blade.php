@@ -126,8 +126,8 @@
 <body>
     <div class="header">
         <div class="logo">
-            @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
-                <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['company_name'] ?? 'Company' }}">
+            @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
+                <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['company_name'] ?? 'Company' }}">
             @else
                 <div class="logo-placeholder">
                     <i class="fas fa-cash-register"></i>

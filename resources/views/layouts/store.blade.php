@@ -26,8 +26,8 @@
                 <!-- Logo & Brand -->
                 <div class="flex items-center">
                     <a href="{{ route('store.index') }}" class="flex items-center space-x-3">
-                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
-                            <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-10 w-10 object-contain">
+                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
+                            <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-10 w-10 object-contain">
                         @else
                             <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-store text-white text-lg"></i>
@@ -119,8 +119,8 @@
                 <!-- Company Info -->
                 <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center space-x-3 mb-4">
-                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
-                            <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-8 w-8 object-contain">
+                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
+                            <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-8 w-8 object-contain">
                         @else
                             <div class="h-8 w-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-store text-white text-sm"></i>

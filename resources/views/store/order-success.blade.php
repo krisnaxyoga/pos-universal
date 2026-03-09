@@ -67,8 +67,8 @@
                     @foreach($transaction->items as $item)
                         <div class="flex items-center space-x-4">
                             <div class="flex-shrink-0">
-                                @if($item->product && $item->product->image && Storage::disk('public')->exists($item->product->image))
-                                    <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product_name }}" 
+                                @if($item->product && $item->product->image && file_exists(public_path($item->product->image)))
+                                    <img src="{{ asset($item->product->image) }}" alt="{{ $item->product_name }}" 
                                          class="w-16 h-16 object-cover rounded-lg">
                                 @else
                                     <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">

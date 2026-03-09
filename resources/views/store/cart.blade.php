@@ -24,8 +24,8 @@
                                     <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                                         <!-- Product Image -->
                                         <div class="flex-shrink-0 self-start">
-                                            @if($item['image'] && Storage::disk('public')->exists($item['image']))
-                                                <img src="{{ Storage::url($item['image']) }}" alt="{{ $item['name'] }}" 
+                                            @if($item['image'] && file_exists(public_path($item['image'])))
+                                                <img src="{{ asset($item['image']) }}" alt="{{ $item['name'] }}" 
                                                      class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl shadow-md">
                                             @else
                                                 <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center shadow-md">

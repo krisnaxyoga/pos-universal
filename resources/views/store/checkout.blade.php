@@ -133,8 +133,8 @@
                         @foreach($cartItems as $item)
                             <div class="flex items-center space-x-3">
                                 <div class="flex-shrink-0">
-                                    @if($item['image'] && Storage::disk('public')->exists($item['image']))
-                                        <img src="{{ Storage::url($item['image']) }}" alt="{{ $item['name'] }}" 
+                                    @if($item['image'] && file_exists(public_path($item['image'])))
+                                        <img src="{{ asset($item['image']) }}" alt="{{ $item['name'] }}"
                                              class="w-12 h-12 object-cover rounded">
                                     @else
                                         <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">

@@ -5,7 +5,6 @@ namespace App\Services;
 use Picqer\Barcode\BarcodeGeneratorSVG;
 use Picqer\Barcode\BarcodeGeneratorPNG;
 use App\Models\Product;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BarcodeService
@@ -88,8 +87,13 @@ class BarcodeService
             $height
         );
 
+        $directory = public_path('barcodes');
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
         $filename = 'barcodes/' . $barcode . '.png';
-        Storage::disk('public')->put($filename, $barcodeImage);
+        file_put_contents(public_path($filename), $barcodeImage);
 
         return $filename;
     }

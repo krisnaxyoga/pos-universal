@@ -12,8 +12,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 group">
-                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
-                            <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? config('app.name') }}" class="w-8 h-8 object-contain">
+                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
+                            <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? config('app.name') }}" class="w-8 h-8 object-contain">
                         @else
                             <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-cash-register text-white text-sm"></i>

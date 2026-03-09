@@ -33,10 +33,10 @@
                                 <x-input-label for="app_logo" :value="__('Logo Aplikasi')" />
                                 
                                 @php $currentLogo = $settings->has('app_logo') ? $settings->get('app_logo')->value : null; @endphp
-                                @if($currentLogo && Storage::disk('public')->exists($currentLogo))
+                                @if($currentLogo && file_exists(public_path($currentLogo)))
                                     <div class="mt-2 mb-4">
                                         <div class="flex items-center space-x-4">
-                                            <img src="{{ Storage::url($currentLogo) }}" alt="Current Logo" class="h-16 w-16 object-contain border rounded">
+                                            <img src="{{ asset($currentLogo) }}" alt="Current Logo" class="h-16 w-16 object-contain border rounded">
                                             <div>
                                                 <p class="text-sm text-gray-600">Logo saat ini</p>
                                                 <button type="button" onclick="removeLogo()" 

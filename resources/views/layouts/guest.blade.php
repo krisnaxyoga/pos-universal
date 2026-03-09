@@ -18,8 +18,8 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div class="flex flex-col items-center">
                 <a href="/" class="flex flex-col items-center space-y-2">
-                    @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
-                        <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? config('app.name') }}" class="w-20 h-20 object-contain">
+                    @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
+                        <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? config('app.name') }}" class="w-20 h-20 object-contain">
                     @else
                         <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                             <i class="fas fa-cash-register text-white text-2xl"></i>

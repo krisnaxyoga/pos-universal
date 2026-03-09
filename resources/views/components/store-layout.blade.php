@@ -26,9 +26,9 @@
                 <!-- Logo & Brand -->
                 <div class="flex items-center flex-shrink-0">
                     <a href="{{ route('store.index') }}" class="flex items-center space-x-4 group py-2">
-                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
+                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
                             <div class="relative">
-                                <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-12 w-12 lg:h-14 lg:w-14 object-contain transition-all duration-300 group-hover:scale-110">
+                                <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-12 w-12 lg:h-14 lg:w-14 object-contain transition-all duration-300 group-hover:scale-110">
                                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
                         @else
@@ -171,8 +171,8 @@
                 <!-- Company Info -->
                 <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center space-x-3 mb-4">
-                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && Storage::disk('public')->exists($appSettings['app_logo']))
-                            <img src="{{ Storage::url($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-8 w-8 object-contain">
+                        @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
+                            <img src="{{ asset($appSettings['app_logo']) }}" alt="{{ $appSettings['app_name'] ?? 'Store' }}" class="h-8 w-8 object-contain">
                         @else
                             <div class="h-8 w-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-store text-white text-sm"></i>

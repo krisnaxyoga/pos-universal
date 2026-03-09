@@ -156,8 +156,8 @@
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-2 border border-gray-100">
                         <!-- Product Image -->
                         <div class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                            @if($product->image && Storage::disk('public')->exists($product->image))
-                                <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
+                            @if($product->image && file_exists(public_path($product->image)))
+                                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" 
                                      class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500">
                             @else
                                 <div class="w-full h-56 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">

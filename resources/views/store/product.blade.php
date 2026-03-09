@@ -30,8 +30,8 @@
             <!-- Product Image -->
             <div class="space-y-4">
                 <div class="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-2xl group">
-                    @if($product->image && Storage::disk('public')->exists($product->image))
-                        <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
+                    @if($product->image && file_exists(public_path($product->image)))
+                        <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" 
                              class="w-full h-80 md:h-96 lg:h-[500px] object-cover group-hover:scale-105 transition-transform duration-500">
                     @else
                         <div class="w-full h-80 md:h-96 lg:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
@@ -205,8 +205,8 @@
                     @foreach($relatedProducts as $relatedProduct)
                         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                             <div class="aspect-w-1 aspect-h-1 bg-gray-200">
-                                @if($relatedProduct->image && Storage::disk('public')->exists($relatedProduct->image))
-                                    <img src="{{ Storage::url($relatedProduct->image) }}" alt="{{ $relatedProduct->name }}" 
+                                @if($relatedProduct->image && file_exists(public_path($relatedProduct->image)))
+                                    <img src="{{ asset($relatedProduct->image) }}" alt="{{ $relatedProduct->name }}" 
                                          class="w-full h-48 object-cover">
                                 @else
                                     <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
