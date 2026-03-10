@@ -310,8 +310,6 @@
     </div>
 
     <!-- Real-time Clock Script -->
-    <script src="/js/pwa/idb-helper.js"></script>
-    <script src="/js/pwa/offline-sync.js"></script>
     <script>
         function updateClock() {
             const now = new Date();

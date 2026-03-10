@@ -238,7 +238,6 @@
         </div>
     </div>
 
-    <script src="/js/pwa/idb-helper.js"></script>
     <script src="/js/pwa/offline-transactions.js"></script>
     <script>
         window.onload = function() {

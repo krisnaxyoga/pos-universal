@@ -280,7 +280,9 @@
         </div>
 
         <!-- PWA Scripts -->
+        <script src="/js/pwa/idb-helper.js" defer></script>
         <script src="/js/pwa/sw-register.js" defer></script>
+        <script src="/js/pwa/offline-sync.js" defer></script>
 
         <!-- Auto-hide notifications after 5 seconds -->
         <script>

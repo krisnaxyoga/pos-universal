@@ -321,7 +321,6 @@
         }
     </script>
 
-    <script src="/js/pwa/idb-helper.js"></script>
     <script src="/js/pwa/offline-transactions.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

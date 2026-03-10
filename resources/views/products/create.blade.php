@@ -202,7 +202,6 @@
     </div>
     @include('partials.barcode-scanner')
 
-    <script src="/js/pwa/idb-helper.js"></script>
     <script src="/js/pwa/offline-products.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
