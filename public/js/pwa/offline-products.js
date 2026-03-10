@@ -145,7 +145,7 @@
 
         /**
          * Render offline product list when page is served from cache.
-         * Replaces the table body with IndexedDB data.
+         * Replaces both mobile card view and desktop table with IndexedDB data.
          */
         async renderOfflineList() {
             const isOnline = window.connectivityMonitor
@@ -156,46 +156,101 @@
 
             try {
                 const products = await window.posDB.getProducts();
-                if (!products || products.length === 0) return;
-
-                const tbody = document.querySelector('table tbody');
-                if (!tbody) return;
 
                 // Show offline notice
                 const notice = document.getElementById('offline-product-notice');
                 if (notice) notice.classList.remove('hidden');
 
-                // Build table rows from IndexedDB
-                tbody.innerHTML = products.map(p => `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm">
-                            <div class="flex items-center">
-                                ${p.image
-                                    ? `<img src="/${p.image}" class="w-10 h-10 rounded object-cover mr-3" onerror="this.style.display='none'">`
-                                    : `<div class="w-10 h-10 bg-gray-200 rounded flex items-center justify-center mr-3"><i class="fas fa-box text-gray-400"></i></div>`
-                                }
-                                <div>
-                                    <div class="font-medium text-gray-900">${p.name}</div>
-                                    <div class="text-xs text-gray-500">${p.sku || '-'}</div>
+                const fmt = (n) => new Intl.NumberFormat('id-ID').format(n);
+                const imgHtml = (p, size) => p.image
+                    ? `<img src="/${p.image}" class="h-${size} w-${size} rounded-lg object-cover" onerror="this.style.display='none'">`
+                    : `<div class="h-${size} w-${size} rounded-lg bg-gray-200 flex items-center justify-center"><svg class="h-${Math.floor(size/2)} w-${Math.floor(size/2)} text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>`;
+                const offlineBadge = (p) => p._offline_new ? '<span class="ml-1 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Offline</span>' : '';
+                const statusBadge = (p) => p.is_active
+                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Aktif</span>'
+                    : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Nonaktif</span>';
+                const lowStock = (p) => p.stock <= (p.min_stock || 5);
+
+                // === Mobile Card View ===
+                const mobileContainer = document.getElementById('product-cards-mobile');
+                if (mobileContainer) {
+                    if (!products || products.length === 0) {
+                        mobileContainer.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-box-open text-3xl mb-2 block"></i>
+                                <p>Belum ada produk (offline).</p>
+                            </div>`;
+                    } else {
+                        mobileContainer.innerHTML = products.map(p => `
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 h-14 w-14">${imgHtml(p, 14)}</div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="min-w-0">
+                                                <h3 class="text-sm font-semibold text-gray-900 truncate">${p.name}</h3>
+                                                <p class="text-xs text-gray-500">${p.sku || '-'}</p>
+                                            </div>
+                                            ${statusBadge(p)}${offlineBadge(p)}
+                                        </div>
+                                        <div class="mt-2 text-sm">
+                                            <span class="font-semibold text-gray-900">Rp ${fmt(p.price)}</span>
+                                            <span class="text-xs text-gray-400 ml-1">(Modal: Rp ${fmt(p.cost)})</span>
+                                        </div>
+                                        <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                                            <span><i class="fas fa-layer-group mr-1"></i>${p.category_name || '-'}</span>
+                                            <span class="${lowStock(p) ? 'text-red-600 font-bold' : ''}">
+                                                <i class="fas fa-cubes mr-1"></i>Stok: ${p.stock}
+                                                ${lowStock(p) ? '<i class="fas fa-exclamation-triangle ml-1"></i>' : ''}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 italic">
+                                    <i class="fas fa-wifi-slash mr-1"></i>Mode offline — aksi terbatas
                                 </div>
                             </div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-600">${p.category_name || '-'}</td>
-                        <td class="px-4 py-3 text-sm font-medium">Rp ${new Intl.NumberFormat('id-ID').format(p.price)}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <span class="${p.stock <= (p.min_stock || 5) ? 'text-red-600 font-bold' : 'text-gray-700'}">${p.stock}</span>
-                        </td>
-                        <td class="px-4 py-3 text-sm">
-                            <span class="px-2 py-1 rounded-full text-xs font-medium ${p.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                ${p.is_active ? 'Aktif' : 'Nonaktif'}
-                            </span>
-                            ${p._offline_new ? '<span class="ml-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Offline</span>' : ''}
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">
-                            <span class="italic text-xs">Offline mode</span>
-                        </td>
-                    </tr>
-                `).join('');
+                        `).join('');
+                    }
+                }
+
+                // === Desktop Table View ===
+                const tbody = document.querySelector('table tbody');
+                if (tbody) {
+                    if (!products || products.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada produk (offline).</td></tr>';
+                    } else {
+                        tbody.innerHTML = products.map(p => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">${imgHtml(p, 10)}</div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">${p.name}</div>
+                                            <div class="text-sm text-gray-500">${p.sku || '-'}</div>
+                                            ${p.barcode ? `<div class="text-xs text-gray-400">${p.barcode}</div>` : ''}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${p.category_name || '-'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">Rp ${fmt(p.price)}</div>
+                                    <div class="text-xs text-gray-500">Modal: Rp ${fmt(p.cost)}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">Stok: ${p.stock}</div>
+                                    ${lowStock(p) ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Stok Menipis</span>' : ''}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    ${statusBadge(p)}${offlineBadge(p)}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="italic text-xs">Offline mode</span>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
 
                 // Hide pagination (not relevant offline)
                 const pagination = document.querySelector('nav[role="navigation"]');

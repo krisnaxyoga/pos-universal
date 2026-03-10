@@ -313,6 +313,7 @@ class SyncController extends Controller
                 'price' => $p->price,
                 'cost' => $p->cost,
                 'stock' => $p->stock,
+                'min_stock' => $p->min_stock,
                 'category_id' => $p->category_id,
                 'category_name' => $p->category->name ?? null,
                 'image' => $p->image,

@@ -368,12 +368,15 @@
     <script src="/js/pwa/offline-products.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                if (window.OfflineProducts) window.OfflineProducts.renderOfflineList();
-            }, 500);
+            const isOnline = window.connectivityMonitor
+                ? window.connectivityMonitor.isOnline
+                : navigator.onLine;
 
-            if (navigator.onLine) {
+            if (isOnline) {
+                // Prefetch create page for offline use
                 fetch('/products/create', { credentials: 'same-origin' }).catch(() => {});
+
+                // Cache categories to IndexedDB
                 const categoryOptions = document.querySelectorAll('select[name="category_id"] option[value]');
                 if (categoryOptions.length > 0 && window.posDB) {
                     const categories = [];
@@ -382,6 +385,26 @@
                     });
                     window.posDB.setMeta('categories', categories).catch(() => {});
                 }
+
+                // Cache products to IndexedDB for offline product list
+                if (window.posDB) {
+                    fetch('/api/pos/products', { credentials: 'same-origin' })
+                        .then(r => r.json())
+                        .then(data => {
+                            const products = data.products || data;
+                            if (Array.isArray(products) && products.length > 0) {
+                                window.posDB.saveProducts(products).catch(e =>
+                                    console.warn('Failed to cache products:', e)
+                                );
+                            }
+                        })
+                        .catch(() => {});
+                }
+            } else {
+                // Offline — render products from IndexedDB
+                setTimeout(() => {
+                    if (window.OfflineProducts) window.OfflineProducts.renderOfflineList();
+                }, 300);
             }
         });
     </script>

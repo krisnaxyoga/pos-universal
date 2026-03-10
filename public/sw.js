@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const SHELL_CACHE = `pos-shell-${CACHE_VERSION}`;
 const CDN_CACHE = `pos-cdn-${CACHE_VERSION}`;
 const IMAGE_CACHE = `pos-images-${CACHE_VERSION}`;
