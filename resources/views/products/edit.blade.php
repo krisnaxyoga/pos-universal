@@ -1,27 +1,26 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-white leading-tight truncate">
                 <i class="fas fa-edit mr-2"></i>
-                Edit Produk: {{ $product->name }}
+                {{ $product->name }}
             </h2>
-            <a href="{{ route('products.index') }}" 
-               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Kembali
+            <a href="{{ route('products.index') }}"
+               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-lg flex items-center text-sm self-start sm:self-auto flex-shrink-0">
+                <i class="fas fa-arrow-left mr-1"></i> Kembali
             </a>
         </div>
     </x-slot>
 
     <div class="glass rounded-xl shadow-sm">
-        <div class="px-6 py-4 border-b border-white/20">
+        <div class="px-4 sm:px-6 py-4 border-b border-white/20">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Informasi Produk</h3>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 Perbarui informasi produk di bawah ini.
             </p>
         </div>
-        
-        <div class="p-6">
+
+        <div class="p-4 sm:p-6">
             <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
@@ -289,15 +288,14 @@
                 </div>
 
                 <!-- Submit Buttons -->
-                <div class="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-white/20">
-                    <a href="{{ route('products.index') }}" 
-                       class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 mt-6 border-t border-white/20">
+                    <a href="{{ route('products.index') }}"
+                       class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 sm:py-2 px-4 rounded-lg text-center">
                         Batal
                     </a>
-                    <button type="submit" 
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                        <i class="fas fa-save mr-2"></i>
-                        Perbarui Produk
+                    <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-save mr-2"></i> Perbarui Produk
                     </button>
                 </div>
             </form>

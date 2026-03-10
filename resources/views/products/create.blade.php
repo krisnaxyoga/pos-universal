@@ -1,20 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
                 Tambah Produk Baru
                 <span id="offline-create-badge" class="hidden ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
                     <i class="fas fa-wifi-slash mr-1"></i>Offline
                 </span>
             </h2>
-            <a href="{{ route('products.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Kembali
+            <a href="{{ route('products.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded text-sm self-start sm:self-auto">
+                <i class="fas fa-arrow-left mr-1"></i> Kembali
             </a>
         </div>
     </x-slot>
 
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-6 text-gray-900">
+        <div class="p-4 sm:p-6 text-gray-900">
             <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
@@ -187,14 +187,14 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex justify-end space-x-3">
-                    <a href="{{ route('products.index') }}" 
-                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                    <a href="{{ route('products.index') }}"
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 sm:py-2 px-4 rounded text-center">
                         Batal
                     </a>
-                    <button type="submit" 
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Simpan Produk
+                    <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded">
+                        <i class="fas fa-save mr-1"></i> Simpan Produk
                     </button>
                 </div>
             </form>

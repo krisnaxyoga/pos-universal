@@ -1,20 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-white leading-tight truncate">
                 <i class="fas fa-box mr-2"></i>
-                Detail Produk: {{ $product->name }}
+                {{ $product->name }}
             </h2>
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('products.edit', $product) }}" 
-                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                    <i class="fas fa-edit mr-2"></i>
-                    Edit
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <a href="{{ route('products.edit', $product) }}"
+                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg flex items-center text-sm">
+                    <i class="fas fa-edit mr-1"></i> Edit
                 </a>
-                <a href="{{ route('products.index') }}" 
-                   class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Kembali
+                <a href="{{ route('products.index') }}"
+                   class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-lg flex items-center text-sm">
+                    <i class="fas fa-arrow-left mr-1"></i> Kembali
                 </a>
             </div>
         </div>
@@ -310,22 +308,20 @@
             <div class="px-6 py-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi</h3>
                 
-                <div class="flex items-center space-x-3">
-                    <a href="{{ route('products.edit', $product) }}" 
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ route('products.edit', $product) }}"
                        class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm">
-                        <i class="fas fa-edit mr-2"></i>
-                        Edit Produk
+                        <i class="fas fa-edit mr-2"></i> Edit Produk
                     </a>
-                    
+
                     @if(!$product->transactionItems()->count())
                         <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline"
                               onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak dapat dibatalkan.')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" 
+                            <button type="submit"
                                     class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium text-sm">
-                                <i class="fas fa-trash mr-2"></i>
-                                Hapus Produk
+                                <i class="fas fa-trash mr-2"></i> Hapus Produk
                             </button>
                         </form>
                     @else
