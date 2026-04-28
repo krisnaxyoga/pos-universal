@@ -8,6 +8,7 @@ use App\Models\TransactionItem;
 use App\Models\Customer;
 use App\Models\Setting;
 use App\Services\BarcodeService;
+use App\Services\ThermalPrintService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -413,6 +414,23 @@ class PosController extends Controller
     {
         $transaction = Transaction::with(['items.product', 'user'])->findOrFail($id);
         return view('pos.receipt', compact('transaction'));
+    }
+
+    /**
+     * Return ESC/POS bytes for the transaction receipt as base64,
+     * to be sent to a thermal printer via Web Bluetooth on the client.
+     */
+    public function escposReceipt($id, ThermalPrintService $thermalPrintService): JsonResponse
+    {
+        $transaction = Transaction::with(['items.product', 'user'])->findOrFail($id);
+
+        $bytes = $thermalPrintService->generateReceiptBytes($transaction);
+
+        return response()->json([
+            'success' => true,
+            'transaction_number' => $transaction->transaction_number,
+            'data' => base64_encode($bytes),
+        ]);
     }
 
     /**

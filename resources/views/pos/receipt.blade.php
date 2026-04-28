@@ -120,10 +120,48 @@
                 margin: 0;
                 padding: 5px;
             }
+            .no-print { display: none !important; }
+        }
+
+        .print-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .print-actions button {
+            font-family: inherit;
+            font-size: 12px;
+            padding: 8px 12px;
+            border: 1px solid #000;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .print-actions button.primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .print-actions button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        #bt-status {
+            text-align: center;
+            font-size: 11px;
+            margin-bottom: 8px;
+            min-height: 14px;
         }
     </style>
 </head>
 <body>
+    <div class="print-actions no-print">
+        <button type="button" id="bt-print-btn" class="primary">Print Bluetooth</button>
+        <button type="button" onclick="window.print()">Print Browser</button>
+    </div>
+    <div id="bt-status" class="no-print"></div>
     <div class="header">
         <div class="logo">
             @if(isset($appSettings['app_logo']) && $appSettings['app_logo'] && file_exists(public_path($appSettings['app_logo'])))
@@ -239,16 +277,41 @@
     </div>
 
     <script src="/js/pwa/offline-transactions.js"></script>
+    <script src="/js/bluetooth-printer.js"></script>
     <script>
-        window.onload = function() {
-            if (!navigator.onLine) {
-                OfflineTransactions.renderOfflineReceipt({{ $transaction->id }});
-            }
-            window.print();
+        const transactionId = {{ $transaction->id }};
+        const btBtn = document.getElementById('bt-print-btn');
+        const btStatus = document.getElementById('bt-status');
+
+        function setStatus(msg, isError) {
+            btStatus.textContent = msg || '';
+            btStatus.style.color = isError ? '#b91c1c' : '#15803d';
         }
 
-        window.onafterprint = function() {
-            window.close();
+        if (!window.BluetoothPrinter || !BluetoothPrinter.isSupported()) {
+            btBtn.disabled = true;
+            btBtn.title = 'Web Bluetooth tidak didukung di browser ini';
+            setStatus('Web Bluetooth tidak tersedia di browser ini', true);
+        } else {
+            btBtn.addEventListener('click', async function () {
+                btBtn.disabled = true;
+                setStatus('Menghubungkan ke printer...');
+                try {
+                    await BluetoothPrinter.printReceipt(transactionId);
+                    setStatus('Struk berhasil dikirim ke printer.');
+                } catch (err) {
+                    console.error(err);
+                    setStatus(err.message || 'Gagal mencetak.', true);
+                } finally {
+                    btBtn.disabled = false;
+                }
+            });
+        }
+
+        window.onload = function() {
+            if (!navigator.onLine) {
+                OfflineTransactions.renderOfflineReceipt(transactionId);
+            }
         }
     </script>
 </body>

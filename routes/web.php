@@ -82,7 +82,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('pos/search-barcode', [PosController::class, 'searchByBarcode'])->name('pos.search-barcode');
         Route::post('pos/transaction', [PosController::class, 'processTransaction'])->name('pos.transaction');
         Route::get('pos/receipt/{id}', [PosController::class, 'printReceipt'])->name('pos.receipt');
-        
+        Route::get('pos/receipt/{id}/escpos', [PosController::class, 'escposReceipt'])->name('pos.receipt.escpos');
+
         // Draft functionality
         Route::post('pos/draft/save', [PosController::class, 'saveDraft'])->name('pos.draft.save');
         Route::get('pos/draft/{id}', [PosController::class, 'loadDraft'])->name('pos.draft.load');
